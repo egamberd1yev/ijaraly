@@ -14,6 +14,7 @@ async function createListing(req, res) {
       hasGas,
       hasWater,
       hasElectricity,
+      hasFurniture,
       roomCount,
       price,
       description,
@@ -28,6 +29,7 @@ async function createListing(req, res) {
       hasGas: !!hasGas,
       hasWater: !!hasWater,
       hasElectricity: !!hasElectricity,
+      hasFurniture: !!hasFurniture,
       roomCount,
       price,
       description: description || null,
@@ -52,6 +54,7 @@ async function getListings(req, res) {
       hasGas,
       hasWater,
       hasElectricity,
+      hasFurniture,
       minPrice,
       maxPrice,
       roomCount,
@@ -77,6 +80,10 @@ async function getListings(req, res) {
     if (hasGas === "true") qb.andWhere("listing.hasGas = true");
     if (hasWater === "true") qb.andWhere("listing.hasWater = true");
     if (hasElectricity === "true") qb.andWhere("listing.hasElectricity = true");
+    if (hasFurniture === "true") qb.andWhere("listing.hasFurniture = true");
+    // Eslatma: frontend'dagi "Barcha sharoit bor" filteri hasGas=true,
+    // hasWater=true, hasElectricity=true'ni birgalikda yuboradi —
+    // bu yerda alohida maxsus holat kerak emas.
 
     if (roomCount) {
       qb.andWhere("listing.roomCount = :roomCount", { roomCount });

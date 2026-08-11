@@ -64,6 +64,7 @@ const createListingSchema = Joi.object({
   hasGas: Joi.boolean().default(false),
   hasWater: Joi.boolean().default(false),
   hasElectricity: Joi.boolean().default(false),
+  hasFurniture: Joi.boolean().default(false),
   roomCount: Joi.number().integer().min(1).max(50).required().messages({
     "number.base": "Honalar soni raqam bo'lishi kerak",
     "any.required": "Honalar soni kiritilishi shart",
@@ -82,6 +83,7 @@ const updateListingSchema = Joi.object({
   hasGas: Joi.boolean(),
   hasWater: Joi.boolean(),
   hasElectricity: Joi.boolean(),
+  hasFurniture: Joi.boolean(),
   roomCount: Joi.number().integer().min(1).max(50),
   price: Joi.number().integer().min(0),
   description: Joi.string().max(2000).allow(null, ""),
@@ -94,6 +96,7 @@ const listingQuerySchema = Joi.object({
   hasGas: Joi.string().valid("true", "false"),
   hasWater: Joi.string().valid("true", "false"),
   hasElectricity: Joi.string().valid("true", "false"),
+  hasFurniture: Joi.string().valid("true", "false"),
   roomCount: Joi.number().integer().min(1),
   minPrice: Joi.number().integer().min(0),
   maxPrice: Joi.number().integer().min(0),

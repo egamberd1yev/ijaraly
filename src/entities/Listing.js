@@ -43,6 +43,11 @@ const Listing = new EntitySchema({
       type: "boolean",
       default: false,
     },
+    // Texnika-jihoz (mebel, texnika) bor-yo'qligi
+    hasFurniture: {
+      type: "boolean",
+      default: false,
+    },
     roomCount: {
       type: "int",
     },
