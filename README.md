@@ -24,7 +24,7 @@ Express + TypeORM (EntitySchema) + PostgreSQL + Joi validatsiya + Multer (fayl y
    ```bash
    npm run dev
    ```
-   Server `http://localhost:5000` da ishga tushadi va TypeORM `synchronize: true`
+   Server `http://localhost:7000` da ishga tushadi va TypeORM `synchronize: true`
    tufayli jadvallarni (`users`, `listings`) avtomatik yaratadi.
 
 ## Loyiha tuzilishi
@@ -100,14 +100,14 @@ Xato bo'lsa, `400` status va tushunarli xabarlar qaytariladi:
 
 **Ro'yxatdan o'tish:**
 ```bash
-curl -X POST http://localhost:5000/api/auth/signup \
+curl -X POST http://localhost:7000/api/auth/signup \
   -H "Content-Type: application/json" \
   -d '{"fullName":"Aziz Aripov","email":"aziz@example.com","password":"parol123","phone":"+998901234567"}'
 ```
 
 **Rasm yuklash:**
 ```bash
-curl -X POST http://localhost:5000/api/upload \
+curl -X POST http://localhost:7000/api/upload \
   -H "Authorization: Bearer <TOKEN>" \
   -F "images=@/path/uy1.jpg" \
   -F "images=@/path/uy2.jpg"
@@ -115,7 +115,7 @@ curl -X POST http://localhost:5000/api/upload \
 
 **Yangi e'lon qo'shish** (yuklangan rasm URL'lari bilan):
 ```bash
-curl -X POST http://localhost:5000/api/listings \
+curl -X POST http://localhost:7000/api/listings \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <TOKEN>" \
   -d '{
@@ -133,5 +133,5 @@ curl -X POST http://localhost:5000/api/listings \
 
 **Qidiruv/filter:**
 ```bash
-curl "http://localhost:5000/api/listings?address=3 kichik daha&renovationType=yevro&hasGas=true"
+curl "http://localhost:7000/api/listings?address=3 kichik daha&renovationType=yevro&hasGas=true"
 ```
