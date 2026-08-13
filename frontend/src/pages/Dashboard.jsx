@@ -89,7 +89,7 @@ export default function Dashboard() {
               className="overflow-hidden rounded-xl border border-line bg-white"
             >
               <Link to={`/listings/${listing.id}`}>
-                <div className="h-32 bg-gradient-to-br from-ink-500 to-ink-900">
+                <div className="h-32 bg-linear-to-br from-ink-500 to-ink-900">
                   {listing.images?.[0] && (
                     <img
                       src={getImageUrl(listing.images[0])}

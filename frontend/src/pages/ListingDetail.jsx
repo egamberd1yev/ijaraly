@@ -74,7 +74,7 @@ export default function ListingDetail() {
 
       {/* Rasm galereyasi */}
       <div className="mt-4">
-        <div className="h-72 overflow-hidden rounded-xl bg-gradient-to-br from-ink-500 to-ink-900 sm:h-96">
+        <div className="h-72 overflow-hidden rounded-xl bg-linear-to-br from-ink-500 to-ink-900 sm:h-96">
           {images[activeImage] && (
             <img
               src={getImageUrl(images[activeImage])}
