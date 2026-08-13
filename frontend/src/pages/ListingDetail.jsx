@@ -89,9 +89,8 @@ export default function ListingDetail() {
               <button
                 key={i}
                 onClick={() => setActiveImage(i)}
-                className={`h-16 w-16 overflow-hidden rounded-lg border-2 ${
-                  i === activeImage ? "border-ink-700" : "border-transparent"
-                }`}
+                className={`h-16 w-16 overflow-hidden rounded-lg border-2 ${i === activeImage ? "border-ink-700" : "border-transparent"
+                  }`}
               >
                 <img
                   src={getImageUrl(img)}
@@ -169,20 +168,26 @@ export default function ListingDetail() {
                   if (!value) return null;
                   const label = SOCIAL_LABELS[key] || key;
                   const isLink = value.startsWith("http");
+
+                  // Havoladan foydalanuvchi nikini ajratib olish:
+                  // Oxiridagi sleshni (/) olib tashlaymiz va '/' ga bo'lib oxirgi elementni olamiz
+                  const displayValue = isLink ? value.replace(/\/$/, "").split("/").pop() : value;
+
                   return (
-                    <div key={key} className="text-sm">
+                    <div key={key} className="text-sm flex flex-wrap gap-1">
                       <span className="text-muted-2">{label}: </span>
                       {isLink ? (
                         <a
                           href={value}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-ink-700 hover:underline"
+                          className="text-ink-700 hover:underline truncate max-w-full"
+                          title={value}
                         >
-                          {value}
+                          @{displayValue}
                         </a>
                       ) : (
-                        <span className="text-ink">{value}</span>
+                        <span className="text-ink truncate max-w-full">{value}</span>
                       )}
                     </div>
                   );
@@ -190,7 +195,7 @@ export default function ListingDetail() {
               </div>
             )}
           </div>
-        </div>
+        </div>  
       </div>
     </div>
   );
