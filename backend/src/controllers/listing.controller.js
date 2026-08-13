@@ -17,6 +17,7 @@ async function createListing(req, res) {
       hasFurniture,
       roomCount,
       price,
+      currency,
       description,
     } = req.body;
 
@@ -32,6 +33,7 @@ async function createListing(req, res) {
       hasFurniture: !!hasFurniture,
       roomCount,
       price,
+      currency: currency || "som",
       description: description || null,
       status: "active",
     });

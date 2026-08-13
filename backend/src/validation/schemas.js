@@ -73,6 +73,9 @@ const createListingSchema = Joi.object({
     "number.base": "Narx raqam bo'lishi kerak",
     "any.required": "Narx kiritilishi shart",
   }),
+  currency: Joi.string().valid("som", "dollar").default("som").messages({
+    "any.only": "Valyuta 'som' yoki 'dollar' bo'lishi kerak",
+  }),
   description: Joi.string().max(2000).allow(null, ""),
 });
 
@@ -86,6 +89,7 @@ const updateListingSchema = Joi.object({
   hasFurniture: Joi.boolean(),
   roomCount: Joi.number().integer().min(1).max(50),
   price: Joi.number().integer().min(0),
+  currency: Joi.string().valid("som", "dollar"),
   description: Joi.string().max(2000).allow(null, ""),
   status: Joi.string().valid("active", "rented", "inactive"),
 });

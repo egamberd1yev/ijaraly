@@ -18,6 +18,7 @@ export default function NewListing() {
     hasFurniture: false,
     roomCount: "",
     price: "",
+    currency: "som",
     description: "",
   });
 
@@ -38,6 +39,27 @@ export default function NewListing() {
   function handleChange(e) {
     const { name, type, checked, value } = e.target;
     setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+  }
+
+  // Faqat musbat butun songa ruxsat beradi — "-", "+", "e", "." kabi
+  // belgilarni tugma bosilgan zahoti bloklaydi (raqamli input'da ular
+  // brauzer tomonidan yozishga ruxsat berilgan, lekin bizga kerak emas)
+  function handleIntegerKeyDown(e) {
+    if (["-", "+", "e", "E", "."].includes(e.key)) {
+      e.preventDefault();
+    }
+  }
+
+  // Agar foydalanuvchi qiymatni joylashtirsa (paste) yoki boshqa yo'l bilan
+  // manfiy/o'nlik son kirsa, bu yerda yakuniy tozalash amalga oshadi
+  function handleRoomCountChange(e) {
+    const cleaned = e.target.value.replace(/[^0-9]/g, "");
+    setForm({ ...form, roomCount: cleaned });
+  }
+
+  function handlePriceChange(e) {
+    const cleaned = e.target.value.replace(/[^0-9]/g, "");
+    setForm({ ...form, price: cleaned });
   }
 
   function handleFilesChange(e) {
@@ -71,6 +93,12 @@ export default function NewListing() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+
+    if (!form.roomCount || Number(form.roomCount) < 1) {
+      setError("Honalar soni kamida 1 bo'lishi kerak");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -233,28 +261,51 @@ export default function NewListing() {
           <div>
             <label className="mb-1 block text-sm text-ink">Honalar soni</label>
             <input
-              type="number"
+              type="text"
               name="roomCount"
               value={form.roomCount}
-              onChange={handleChange}
+              onChange={handleRoomCountChange}
+              onKeyDown={handleIntegerKeyDown}
               required
-              min={1}
-              max={50}
+              inputMode="numeric"
+              placeholder="3"
               className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-ink">Narx (so'm/oy)</label>
-            <input
-              type="number"
-              name="price"
-              value={form.price}
-              onChange={handleChange}
-              required
-              min={0}
-              placeholder="4500000"
-              className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
-            />
+            <label className="mb-1 block text-sm text-ink">Narx</label>
+            <div className="flex gap-1.5">
+              <input
+                type="text"
+                name="price"
+                value={form.price}
+                onChange={handlePriceChange}
+                onKeyDown={handleIntegerKeyDown}
+                required
+                inputMode="numeric"
+                placeholder={form.currency === "dollar" ? "450" : "4500000"}
+                className="w-full min-w-0 flex-1 rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
+              />
+              <div className="flex shrink-0 overflow-hidden rounded-lg border border-line">
+                {[
+                  { value: "som", label: "so'm" },
+                  { value: "dollar", label: "$" },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setForm({ ...form, currency: opt.value })}
+                    className={`px-3 text-sm ${
+                      form.currency === opt.value
+                        ? "bg-ink-700 text-paper-100"
+                        : "bg-white text-muted"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

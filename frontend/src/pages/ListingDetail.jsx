@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../api/client";
 import { getImageUrl } from "../api/getImageUrl";
+import { formatPrice } from "../utils/format";
 
 const SOCIAL_LABELS = {
   instagram: "Instagram",
@@ -15,6 +16,7 @@ export default function ListingDetail() {
   const [activeImage, setActiveImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -32,6 +34,17 @@ export default function ListingDetail() {
       })
       .finally(() => setLoading(false));
   }, [id]);
+
+  async function handleCopyPhone(phone) {
+    try {
+      await navigator.clipboard.writeText(phone);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API ishlamasa (masalan http muhitda), jim o'tamiz —
+      // foydalanuvchi baribir raqamni ko'rib, qo'lda yozib olishi mumkin
+    }
+  }
 
   if (loading) {
     return <p className="py-16 text-center text-muted">Yuklanmoqda...</p>;
@@ -98,7 +111,7 @@ export default function ListingDetail() {
             {listing.address}
           </h1>
           <p className="mt-1 text-xl font-medium text-ink-700">
-            {Number(listing.price).toLocaleString("uz-UZ")} so'm/oy
+            {formatPrice(listing.price, listing.currency)}
           </p>
 
           <div className="mt-4 flex flex-wrap gap-2">
@@ -134,12 +147,20 @@ export default function ListingDetail() {
             </div>
 
             {owner.phone && (
-              <a
-                href={`tel:${owner.phone}`}
-                className="mt-3 block rounded-lg bg-ink-700 py-2 text-center text-sm font-medium text-paper-100 hover:bg-ink-900"
+              <button
+                type="button"
+                onClick={() => handleCopyPhone(owner.phone)}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-ink-700 py-2 text-sm font-medium text-paper-100 hover:bg-ink-900"
               >
-                {owner.phone}
-              </a>
+                {copied ? (
+                  "Nusxalandi ✓"
+                ) : (
+                  <>
+                    {owner.phone}
+                    <CopyIcon />
+                  </>
+                )}
+              </button>
             )}
 
             {hasSocialLinks && (
@@ -180,5 +201,18 @@ function Badge({ children }) {
     <span className="rounded-full border border-line bg-paper-200 px-3 py-1 text-xs text-ink">
       {children}
     </span>
+  );
+}
+
+function CopyIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <rect x="9" y="9" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="2" />
+      <path
+        d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+    </svg>
   );
 }

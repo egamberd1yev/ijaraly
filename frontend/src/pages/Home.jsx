@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/client";
 import { getImageUrl } from "../api/getImageUrl";
+import { formatPrice } from "../utils/format";
 
 const ROOM_OPTIONS = [1, 2, 3, 4, 5];
 const PAGE_LIMIT = 12;
@@ -218,7 +219,7 @@ function ListingCard({ listing }) {
         <p className="text-sm font-medium text-ink">{listing.address}</p>
         <p className="mb-2 text-xs text-muted-2">{conditionText}</p>
         <p className="text-sm font-medium text-ink-700">
-          {Number(listing.price).toLocaleString("uz-UZ")} so'm/oy
+          {formatPrice(listing.price, listing.currency)}
         </p>
       </div>
     </Link>

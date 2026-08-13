@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { getImageUrl } from "../api/getImageUrl";
+import { formatPrice } from "../utils/format";
 import { useAuth } from "../context/AuthContext";
 import ConfirmModal from "../components/ConfirmModal";
 
@@ -113,7 +114,7 @@ export default function Dashboard() {
                 </p>
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-ink-700">
-                    {Number(listing.price).toLocaleString("uz-UZ")} so'm/oy
+                    {formatPrice(listing.price, listing.currency)}
                   </p>
                   <button
                     onClick={() => setDeleteTarget(listing.id)}

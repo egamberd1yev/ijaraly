@@ -51,9 +51,14 @@ const Listing = new EntitySchema({
     roomCount: {
       type: "int",
     },
-    // Narx so'mda, oylik ijara narxi
+    // Narx so'mda yoki dollarda bo'lishi mumkin
     price: {
       type: "int",
+    },
+    currency: {
+      type: "enum",
+      enum: ["som", "dollar"],
+      default: "som",
     },
     description: {
       type: "text",
