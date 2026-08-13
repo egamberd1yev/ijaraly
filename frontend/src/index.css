@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Alegreya:wght@500;600&family=Inter:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* "Registon" dizayn palitrasi */
+  --color-ink-900: #153f3f;
+  --color-ink-700: #1c4a4a;
+  --color-ink-500: #2c6363;
+  --color-ink-300: #3f8fa0;
+
+  --color-gold-600: #c97e1e;
+  --color-gold-500: #e8a33d;
+  --color-gold-100: #fbf1dc;
+
+  --color-paper-100: #faf6ee;
+  --color-paper-200: #f2ede0;
+  --color-line: #e4dfd1;
+
+  --color-ink: #232323;
+  --color-muted: #6b6b60;
+  --color-muted-2: #8a8a80;
+
+  --font-display: 'Alegreya', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background: var(--color-paper-100);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+}
