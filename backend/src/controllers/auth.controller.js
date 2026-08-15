@@ -36,6 +36,7 @@ async function signup(req, res) {
       phone: phone || null,
       passwordHash,
       socialLinks: {},
+      termsAcceptedAt: new Date(),
     });
 
     await repo.save(user);

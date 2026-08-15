@@ -7,6 +7,7 @@ const { AppDataSource } = require("./config/data-source");
 const authRoutes = require("./routes/auth.routes");
 const listingRoutes = require("./routes/listing.routes");
 const uploadRoutes = require("./routes/upload.routes");
+const { startExpirationJob } = require("./jobs/expireListings");
 
 dotenv.config();
 
@@ -31,8 +32,9 @@ app.get("/api/health", (_req, res) => {
 AppDataSource.initialize()
   .then(() => {
     console.log("✅ Ma'lumotlar bazasiga ulanish muvaffaqiyatli");
+    startExpirationJob();
     app.listen(PORT, () => {
-      console.log(`🚀 Server http://localhost:${PORT} portta ishlamoqda`);
+      console.log(`🚀 Server http://localhost:${PORT} manzilida ishlamoqda`);
     });
   })
   .catch((err) => {

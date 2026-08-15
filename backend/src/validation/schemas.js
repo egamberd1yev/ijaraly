@@ -22,6 +22,10 @@ const signupSchema = Joi.object({
     "string.min": "Parol kamida 6 ta belgidan iborat bo'lishi kerak",
     "string.empty": "Parol kiritilishi shart",
   }),
+  agreeToTerms: Joi.boolean().valid(true).required().messages({
+    "any.only": "Davom etish uchun shartlar va qoidalarga rozilik bildirishingiz kerak",
+    "any.required": "Davom etish uchun shartlar va qoidalarga rozilik bildirishingiz kerak",
+  }),
 });
 
 const loginSchema = Joi.object({
@@ -34,6 +38,14 @@ const loginSchema = Joi.object({
   }),
 });
 
+// Har bir ijtimoiy tarmoq uchun: foydalanuvchi nomi (nik) va to'liq link
+const socialPlatformSchema = Joi.object({
+  username: Joi.string().allow(null, "").max(100),
+  url: Joi.string().uri().allow(null, "").messages({
+    "string.uri": "Link to'g'ri formatda bo'lishi kerak (https:// bilan boshlansin)",
+  }),
+});
+
 const updateProfileSchema = Joi.object({
   fullName: Joi.string().min(2).max(100),
   phone: Joi.string()
@@ -41,9 +53,9 @@ const updateProfileSchema = Joi.object({
     .allow(null, ""),
   avatarUrl: Joi.string().uri().allow(null, ""),
   socialLinks: Joi.object({
-    instagram: Joi.string().allow(null, ""),
-    telegram: Joi.string().allow(null, ""),
-    facebook: Joi.string().allow(null, ""),
+    instagram: socialPlatformSchema,
+    telegram: socialPlatformSchema,
+    facebook: socialPlatformSchema,
   }),
 });
 
