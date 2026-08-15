@@ -1,9 +1,9 @@
-const { EntitySchema } = require("typeorm");
+import { EntitySchema } from "typeorm";
 
-const RENOVATION_TYPES = ["oddiy", "yevro"];
-const LISTING_STATUSES = ["active", "rented", "inactive"];
+export const RENOVATION_TYPES = ["oddiy", "yevro"];
+export const LISTING_STATUSES = ["active", "rented", "inactive"];
 
-const Listing = new EntitySchema({
+export const Listing = new EntitySchema({
   name: "Listing",
   tableName: "listings",
   columns: {
@@ -88,5 +88,3 @@ const Listing = new EntitySchema({
   },
   indices: [{ columns: ["address"] }],
 });
-
-module.exports = { Listing, RENOVATION_TYPES, LISTING_STATUSES };

@@ -1,8 +1,13 @@
-const { Router } = require("express");
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
-const { requireAuth } = require("../middleware/auth.middleware");
+import { Router } from "express";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import { requireAuth } from "../middleware/auth.middleware.js";
+
+// ES modules'da __dirname mavjud emas, shuning uchun import.meta.url orqali quramiz
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const uploadDir = path.join(__dirname, "..", "..", "uploads");
 if (!fs.existsSync(uploadDir)) {
@@ -40,4 +45,4 @@ router.post("/", requireAuth, upload.array("images", 10), (req, res) => {
   res.status(201).json({ urls });
 });
 
-module.exports = router;
+export default router;

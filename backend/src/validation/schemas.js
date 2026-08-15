@@ -1,9 +1,9 @@
-const Joi = require("joi");
-const { RENOVATION_TYPES } = require("../entities/Listing");
+import Joi from "joi";
+import { RENOVATION_TYPES } from "../entities/Listing.js";
 
 // ---- Auth ----
 
-const signupSchema = Joi.object({
+export const signupSchema = Joi.object({
   fullName: Joi.string().min(2).max(100).required().messages({
     "string.empty": "Ism kiritilishi shart",
     "string.min": "Ism kamida 2 ta belgidan iborat bo'lishi kerak",
@@ -28,7 +28,7 @@ const signupSchema = Joi.object({
   }),
 });
 
-const loginSchema = Joi.object({
+export const loginSchema = Joi.object({
   email: Joi.string().email().required().messages({
     "string.email": "Email manzili noto'g'ri formatda",
     "string.empty": "Email kiritilishi shart",
@@ -46,7 +46,7 @@ const socialPlatformSchema = Joi.object({
   }),
 });
 
-const updateProfileSchema = Joi.object({
+export const updateProfileSchema = Joi.object({
   fullName: Joi.string().min(2).max(100),
   phone: Joi.string()
     .pattern(/^\+?[0-9]{7,15}$/)
@@ -61,7 +61,7 @@ const updateProfileSchema = Joi.object({
 
 // ---- Listings ----
 
-const createListingSchema = Joi.object({
+export const createListingSchema = Joi.object({
   images: Joi.array().items(Joi.string()).default([]),
   address: Joi.string().min(3).max(255).required().messages({
     "string.empty": "Manzil kiritilishi shart",
@@ -91,7 +91,7 @@ const createListingSchema = Joi.object({
   description: Joi.string().max(2000).allow(null, ""),
 });
 
-const updateListingSchema = Joi.object({
+export const updateListingSchema = Joi.object({
   images: Joi.array().items(Joi.string()),
   address: Joi.string().min(3).max(255),
   renovationType: Joi.string().valid(...RENOVATION_TYPES),
@@ -106,7 +106,7 @@ const updateListingSchema = Joi.object({
   status: Joi.string().valid("active", "rented", "inactive"),
 });
 
-const listingQuerySchema = Joi.object({
+export const listingQuerySchema = Joi.object({
   address: Joi.string().allow(""),
   renovationType: Joi.string().valid(...RENOVATION_TYPES),
   hasGas: Joi.string().valid("true", "false"),
@@ -119,12 +119,3 @@ const listingQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(50).default(12),
 });
-
-module.exports = {
-  signupSchema,
-  loginSchema,
-  updateProfileSchema,
-  createListingSchema,
-  updateListingSchema,
-  listingQuerySchema,
-};

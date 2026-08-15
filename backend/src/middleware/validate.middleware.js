@@ -1,6 +1,6 @@
 // Joi sxemasini qabul qilib, so'rovni tekshiruvchi umumiy middleware.
 // source: "body" (default) yoki "query" bo'lishi mumkin.
-function validate(schema, source = "body") {
+export function validate(schema, source = "body") {
   return (req, res, next) => {
     const { error, value } = schema.validate(req[source], {
       abortEarly: false, // barcha xatolarni birdaniga qaytaradi
@@ -16,5 +16,3 @@ function validate(schema, source = "body") {
     next();
   };
 }
-
-module.exports = { validate };

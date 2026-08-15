@@ -1,4 +1,4 @@
-const { EntitySchema } = require("typeorm");
+import { EntitySchema } from "typeorm";
 
 // Foydalanuvchi jadvali.
 // Diqqat: bu yerda qattiq "role" maydoni yo'q — har bir user xohlasa
@@ -6,7 +6,7 @@ const { EntitySchema } = require("typeorm");
 // u avtomatik shu e'lonning egasi hisoblanadi.
 //
 // socialLinks tuzilishi: { instagram: { username, url }, telegram: {...}, facebook: {...} }
-const User = new EntitySchema({
+export const User = new EntitySchema({
   name: "User",
   tableName: "users",
   columns: {
@@ -62,5 +62,3 @@ const User = new EntitySchema({
     },
   },
 });
-
-module.exports = { User };

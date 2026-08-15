@@ -1,12 +1,12 @@
-const { Router } = require("express");
-const { signup, login, getMe, updateProfile } = require("../controllers/auth.controller");
-const { requireAuth } = require("../middleware/auth.middleware");
-const { validate } = require("../middleware/validate.middleware");
-const {
+import { Router } from "express";
+import { signup, login, getMe, updateProfile } from "../controllers/auth.controller.js";
+import { requireAuth } from "../middleware/auth.middleware.js";
+import { validate } from "../middleware/validate.middleware.js";
+import {
   signupSchema,
   loginSchema,
   updateProfileSchema,
-} = require("../validation/schemas");
+} from "../validation/schemas.js";
 
 const router = Router();
 
@@ -15,4 +15,4 @@ router.post("/login", validate(loginSchema), login);
 router.get("/me", requireAuth, getMe);
 router.put("/me", requireAuth, validate(updateProfileSchema), updateProfile);
 
-module.exports = router;
+export default router;

@@ -1,14 +1,14 @@
-const cron = require("node-cron");
-const { AppDataSource } = require("../config/data-source");
-const { Listing } = require("../entities/Listing");
+import cron from "node-cron";
+import { AppDataSource } from "../config/data-source.js";
+import { Listing } from "../entities/Listing.js";
 
-const LISTING_LIFETIME_DAYS = 7;
+export const LISTING_LIFETIME_DAYS = 7;
 
 // 7 kundan beri "active" holatda turgan, lekin egasi tomonidan "ijaraga
 // berildi" deb belgilanmagan e'lonlarni "inactive"ga o'tkazadi.
 // Bu bosh sahifada eskirgan (hech kim javob bermagan) e'lonlarning
 // abadiy ko'rinib turishining oldini oladi.
-async function expireOldListings() {
+export async function expireOldListings() {
   const repo = AppDataSource.getRepository(Listing);
 
   const cutoff = new Date();
@@ -31,7 +31,7 @@ async function expireOldListings() {
 // Har soatda ishga tushadi. Server ishga tushganda ham bir marta
 // darhol tekshiradi — shunda server o'chib turgan vaqtda muddati
 // o'tib ketgan e'lonlar ham darhol tuzatiladi.
-function startExpirationJob() {
+export function startExpirationJob() {
   expireOldListings().catch((err) =>
     console.error("E'lonlar muddatini tekshirishda xatolik:", err)
   );
@@ -42,5 +42,3 @@ function startExpirationJob() {
     );
   });
 }
-
-module.exports = { startExpirationJob, expireOldListings, LISTING_LIFETIME_DAYS };

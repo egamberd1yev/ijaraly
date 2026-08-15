@@ -1,19 +1,19 @@
-const { Router } = require("express");
-const {
+import { Router } from "express";
+import {
   createListing,
   getListings,
   getListingById,
   getMyListings,
   updateListing,
   deleteListing,
-} = require("../controllers/listing.controller");
-const { requireAuth, optionalAuth } = require("../middleware/auth.middleware");
-const { validate } = require("../middleware/validate.middleware");
-const {
+} from "../controllers/listing.controller.js";
+import { requireAuth, optionalAuth } from "../middleware/auth.middleware.js";
+import { validate } from "../middleware/validate.middleware.js";
+import {
   createListingSchema,
   updateListingSchema,
   listingQuerySchema,
-} = require("../validation/schemas");
+} from "../validation/schemas.js";
 
 const router = Router();
 
@@ -30,4 +30,4 @@ router.post("/", requireAuth, validate(createListingSchema), createListing);
 router.put("/:id", requireAuth, validate(updateListingSchema), updateListing);
 router.delete("/:id", requireAuth, deleteListing);
 
-module.exports = router;
+export default router;

@@ -1,9 +1,9 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 // Token bor-yo'qligini tekshiradi, bo'lsa req.userId'ni qo'shadi.
 // Login qilingan bo'lishi shart bo'lgan route'larda ishlatiladi
 // (masalan: yangi e'lon qo'yish, profil tahrirlash).
-function requireAuth(req, res, next) {
+export function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -24,7 +24,7 @@ function requireAuth(req, res, next) {
 
 // Token bo'lsa userId'ni qo'shadi, bo'lmasa ham xatolik bermay davom etadi.
 // Masalan bosh sahifada login bo'lmagan user ham uylarni ko'ra oladi.
-function optionalAuth(req, res, next) {
+export function optionalAuth(req, res, next) {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const token = authHeader.split(" ")[1];
@@ -38,5 +38,3 @@ function optionalAuth(req, res, next) {
   }
   next();
 }
-
-module.exports = { requireAuth, optionalAuth };

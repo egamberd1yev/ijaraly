@@ -1,7 +1,7 @@
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { AppDataSource } = require("../config/data-source");
-const { User } = require("../entities/User");
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { AppDataSource } from "../config/data-source.js";
+import { User } from "../entities/User.js";
 
 const userRepo = () => AppDataSource.getRepository(User);
 
@@ -18,7 +18,7 @@ function toPublicUser(user) {
 }
 
 // req.body Joi orqali allaqachon tekshirilgan (validate middleware)
-async function signup(req, res) {
+export async function signup(req, res) {
   try {
     const { fullName, email, phone, password } = req.body;
 
@@ -49,7 +49,7 @@ async function signup(req, res) {
   }
 }
 
-async function login(req, res) {
+export async function login(req, res) {
   try {
     const { email, password } = req.body;
 
@@ -72,7 +72,7 @@ async function login(req, res) {
   }
 }
 
-async function getMe(req, res) {
+export async function getMe(req, res) {
   try {
     const repo = userRepo();
     const user = await repo.findOne({ where: { id: req.userId } });
@@ -87,7 +87,7 @@ async function getMe(req, res) {
 }
 
 // Profilni tahrirlash - ism, telefon, ijtimoiy tarmoq linklari
-async function updateProfile(req, res) {
+export async function updateProfile(req, res) {
   try {
     const repo = userRepo();
     const user = await repo.findOne({ where: { id: req.userId } });
@@ -111,5 +111,3 @@ async function updateProfile(req, res) {
     return res.status(500).json({ message: "Serverda xatolik yuz berdi" });
   }
 }
-
-module.exports = { signup, login, getMe, updateProfile };

@@ -1,13 +1,18 @@
-require("reflect-metadata");
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-const dotenv = require("dotenv");
-const { AppDataSource } = require("./config/data-source");
-const authRoutes = require("./routes/auth.routes");
-const listingRoutes = require("./routes/listing.routes");
-const uploadRoutes = require("./routes/upload.routes");
-const { startExpirationJob } = require("./jobs/expireListings");
+import "reflect-metadata";
+import express from "express";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+import { AppDataSource } from "./config/data-source.js";
+import authRoutes from "./routes/auth.routes.js";
+import listingRoutes from "./routes/listing.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
+import { startExpirationJob } from "./jobs/expireListings.js";
+
+// ES modules'da __dirname mavjud emas, shuning uchun import.meta.url orqali quramiz
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 

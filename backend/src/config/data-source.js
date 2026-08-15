@@ -1,12 +1,12 @@
-require("reflect-metadata");
-const { DataSource } = require("typeorm");
-const dotenv = require("dotenv");
-const { User } = require("../entities/User");
-const { Listing } = require("../entities/Listing");
+import "reflect-metadata";
+import { DataSource } from "typeorm";
+import dotenv from "dotenv";
+import { User } from "../entities/User.js";
+import { Listing } from "../entities/Listing.js";
 
 dotenv.config();
 
-const AppDataSource = new DataSource({
+export const AppDataSource = new DataSource({
   type: "postgres",
   host: process.env.DB_HOST || "localhost",
   port: Number(process.env.DB_PORT) || 5432,
@@ -19,5 +19,3 @@ const AppDataSource = new DataSource({
   logging: false,
   entities: [User, Listing],
 });
-
-module.exports = { AppDataSource };

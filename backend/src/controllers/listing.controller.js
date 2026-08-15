@@ -1,11 +1,11 @@
-const { AppDataSource } = require("../config/data-source");
-const { Listing } = require("../entities/Listing");
+import { AppDataSource } from "../config/data-source.js";
+import { Listing } from "../entities/Listing.js";
 
 const listingRepo = () => AppDataSource.getRepository(Listing);
 
 // Yangi e'lon qo'yish (login bo'lgan foydalanuvchi uchun)
 // req.body Joi orqali allaqachon tekshirilgan (validate middleware)
-async function createListing(req, res) {
+export async function createListing(req, res) {
   try {
     const {
       images,
@@ -48,7 +48,7 @@ async function createListing(req, res) {
 
 // Bosh sahifa / qidiruv / filter uchun umumiy ro'yxat olish
 // req.query Joi orqali allaqachon tekshirilgan va default qiymatlar bilan to'ldirilgan
-async function getListings(req, res) {
+export async function getListings(req, res) {
   try {
     const {
       address,
@@ -115,7 +115,7 @@ async function getListings(req, res) {
   }
 }
 
-async function getListingById(req, res) {
+export async function getListingById(req, res) {
   try {
     const repo = listingRepo();
     const listing = await repo.findOne({
@@ -135,7 +135,7 @@ async function getListingById(req, res) {
 }
 
 // Faqat o'zining e'lonlari (profil / dashboard uchun)
-async function getMyListings(req, res) {
+export async function getMyListings(req, res) {
   try {
     const repo = listingRepo();
     const listings = await repo.find({
@@ -149,7 +149,7 @@ async function getMyListings(req, res) {
   }
 }
 
-async function updateListing(req, res) {
+export async function updateListing(req, res) {
   try {
     const repo = listingRepo();
     const listing = await repo.findOne({ where: { id: req.params.id } });
@@ -170,7 +170,7 @@ async function updateListing(req, res) {
   }
 }
 
-async function deleteListing(req, res) {
+export async function deleteListing(req, res) {
   try {
     const repo = listingRepo();
     const listing = await repo.findOne({ where: { id: req.params.id } });
@@ -189,12 +189,3 @@ async function deleteListing(req, res) {
     return res.status(500).json({ message: "Serverda xatolik yuz berdi" });
   }
 }
-
-module.exports = {
-  createListing,
-  getListings,
-  getListingById,
-  getMyListings,
-  updateListing,
-  deleteListing,
-};
