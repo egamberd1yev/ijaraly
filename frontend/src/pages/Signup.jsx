@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import TermsModal from "../components/TermsModal";
 
 export default function Signup() {
   const [form, setForm] = useState({
@@ -10,6 +11,8 @@ export default function Signup() {
     phone: "",
     password: "",
   });
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -23,10 +26,16 @@ export default function Signup() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+
+    if (!agreeToTerms) {
+      setError("Davom etish uchun shartlar va qoidalarga rozilik bildirishingiz kerak");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await api.post("/auth/signup", form);
+      const res = await api.post("/auth/signup", { ...form, agreeToTerms });
       login(res.data.user, res.data.token);
       navigate("/");
     } catch (err) {
@@ -104,6 +113,26 @@ export default function Signup() {
           />
         </div>
 
+        <label className="flex items-start gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            checked={agreeToTerms}
+            onChange={(e) => setAgreeToTerms(e.target.checked)}
+            className="mt-0.5 h-4 w-4 accent-ink-700"
+          />
+          <span>
+            Men{" "}
+            <button
+              type="button"
+              onClick={() => setShowTerms(true)}
+              className="font-medium text-ink-700 hover:underline"
+            >
+              foydalanish shartlari va qoidalariga
+            </button>{" "}
+            roziman
+          </span>
+        </label>
+
         {error && (
           <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
             {error}
@@ -125,6 +154,8 @@ export default function Signup() {
           Kiring
         </Link>
       </p>
+
+      <TermsModal open={showTerms} onClose={() => setShowTerms(false)} />
     </div>
   );
 }

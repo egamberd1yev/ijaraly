@@ -9,8 +9,19 @@ import ConfirmModal from "../components/ConfirmModal";
 const STATUS_LABELS = {
   active: { text: "Faol", classes: "bg-ink-700/10 text-ink-700" },
   rented: { text: "Ijaraga berilgan", classes: "bg-gold-500/15 text-gold-600" },
-  inactive: { text: "Nofaol", classes: "bg-line/60 text-muted" },
+  inactive: { text: "Muddati tugagan", classes: "bg-line/60 text-muted" },
 };
+
+const LISTING_LIFETIME_DAYS = 7;
+
+// "active" e'lon uchun avtomatik yopilishiga necha kun qolganini hisoblaydi
+function daysUntilExpiry(createdAt) {
+  const created = new Date(createdAt);
+  const expiresAt = new Date(created);
+  expiresAt.setDate(expiresAt.getDate() + LISTING_LIFETIME_DAYS);
+  const diffMs = expiresAt - new Date();
+  return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+}
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -22,6 +33,8 @@ export default function Dashboard() {
 
   // O'chirish uchun tanlangan e'lon id'si — modalni ko'rsatish/berkitishni boshqaradi
   const [deleteTarget, setDeleteTarget] = useState(null);
+  // "Ijaraga berildi" bosilganda tugma vaqtincha o'chirib turiladi
+  const [updatingId, setUpdatingId] = useState(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -46,6 +59,20 @@ export default function Dashboard() {
       setListings((prev) => prev.filter((l) => l.id !== id));
     } catch {
       alert("E'lonni o'chirishda xatolik yuz berdi");
+    }
+  }
+
+  async function handleMarkAsRented(id) {
+    setUpdatingId(id);
+    try {
+      const res = await api.put(`/listings/${id}`, { status: "rented" });
+      setListings((prev) =>
+        prev.map((l) => (l.id === id ? res.data.listing : l))
+      );
+    } catch {
+      alert("Holatni yangilashda xatolik yuz berdi");
+    } finally {
+      setUpdatingId(null);
     }
   }
 
@@ -83,6 +110,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {listings.map((listing) => {
           const status = STATUS_LABELS[listing.status] || STATUS_LABELS.active;
+          const daysLeft =
+            listing.status === "active" ? daysUntilExpiry(listing.createdAt) : null;
+
           return (
             <div
               key={listing.id}
@@ -108,14 +138,33 @@ export default function Dashboard() {
                     {status.text}
                   </span>
                 </div>
-                <p className="mb-2 text-xs text-muted-2">
+                <p className="mb-1 text-xs text-muted-2">
                   {listing.renovationType === "yevro" ? "Yevro" : "Oddiy"} •{" "}
                   {listing.roomCount} hona
                 </p>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-ink-700">
-                    {formatPrice(listing.price, listing.currency)}
+                {daysLeft !== null && (
+                  <p className="mb-2 text-xs text-muted-2">
+                    {daysLeft > 0
+                      ? `${daysLeft} kundan so'ng avtomatik yopiladi`
+                      : "Bugun avtomatik yopiladi"}
                   </p>
+                )}
+                <p className="mb-2 text-sm font-medium text-ink-700">
+                  {formatPrice(listing.price, listing.currency)}
+                </p>
+
+                <div className="flex items-center justify-between gap-2">
+                  {listing.status === "active" ? (
+                    <button
+                      onClick={() => handleMarkAsRented(listing.id)}
+                      disabled={updatingId === listing.id}
+                      className="rounded-lg bg-ink-700 px-3 py-1.5 text-xs font-medium text-paper-100 hover:bg-ink-900 disabled:opacity-60"
+                    >
+                      {updatingId === listing.id ? "..." : "Ijaraga berildi"}
+                    </button>
+                  ) : (
+                    <span />
+                  )}
                   <button
                     onClick={() => setDeleteTarget(listing.id)}
                     className="text-xs text-red-600 hover:underline"

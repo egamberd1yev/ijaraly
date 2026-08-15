@@ -209,11 +209,10 @@ export default function NewListing() {
             {["oddiy", "yevro"].map((type) => (
               <label
                 key={type}
-                className={`flex-1 cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm capitalize ${
-                  form.renovationType === type
+                className={`flex-1 cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm capitalize ${form.renovationType === type
                     ? "border-ink-700 bg-ink-700 text-paper-100"
                     : "border-line bg-white text-ink"
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -295,11 +294,10 @@ export default function NewListing() {
                     key={opt.value}
                     type="button"
                     onClick={() => setForm({ ...form, currency: opt.value })}
-                    className={`px-3 text-sm ${
-                      form.currency === opt.value
+                    className={`px-3 text-sm ${form.currency === opt.value
                         ? "bg-ink-700 text-paper-100"
                         : "bg-white text-muted"
-                    }`}
+                      }`}
                   >
                     {opt.label}
                   </button>
@@ -312,14 +310,14 @@ export default function NewListing() {
         {/* Qo'shimcha ma'lumot */}
         <div>
           <label className="mb-1 block text-sm text-ink">
-            Qo'shimcha ma'lumot <span className="text-muted-2">(ixtiyoriy)</span>
+            Uyning aniq malumotlari Masalan: Uyning aniq manzili, Honalar olchami ...  <span className="text-muted-2">(majburiy)</span>
           </label>
           <textarea
             name="description"
             value={form.description}
             onChange={handleChange}
             rows={4}
-            placeholder="Metro yaqin, yorug' xonalar..."
+            required={true}
             className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
           />
         </div>
