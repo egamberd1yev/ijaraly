@@ -216,7 +216,18 @@ function ListingCard({ listing }) {
         )}
       </div>
       <div className="p-3">
-        <p className="text-sm font-medium text-ink">{listing.address}</p>
+        <div className="mb-1 flex items-center justify-between gap-2">
+          <p className="text-sm font-medium text-ink">{listing.address}</p>
+          {listing.listedBy === "agent" ? (
+            <span className="shrink-0 rounded-full bg-gold-100 px-2 py-0.5 text-[10px] font-medium text-gold-600">
+              Vositachi
+            </span>
+          ) : (
+            <span className="shrink-0 rounded-full bg-ink-700/10 px-2 py-0.5 text-[10px] font-medium text-ink-700">
+              Ega
+            </span>
+          )}
+        </div>
         <p className="mb-2 text-xs text-muted-2">{conditionText}</p>
         <p className="text-sm font-medium text-ink-700">
           {formatPrice(listing.price, listing.currency)}

@@ -19,6 +19,8 @@ export default function NewListing() {
     roomCount: "",
     price: "",
     currency: "som",
+    listedBy: "owner",
+    commissionPercent: "",
     description: "",
   });
 
@@ -99,6 +101,11 @@ export default function NewListing() {
       return;
     }
 
+    if (form.listedBy === "agent" && !form.commissionPercent) {
+      setError("Vositachi uchun komissiya foizini kiriting");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -118,6 +125,8 @@ export default function NewListing() {
         ...form,
         roomCount: Number(form.roomCount),
         price: Number(form.price),
+        commissionPercent:
+          form.listedBy === "agent" ? Number(form.commissionPercent) : null,
         images: imageUrls,
       });
 
@@ -228,6 +237,63 @@ export default function NewListing() {
           </div>
         </div>
 
+        {/* Kim joylayotgani */}
+        <div>
+          <label className="mb-1 block text-sm text-ink">Kim joylayotgan</label>
+          <div className="flex gap-3">
+            {[
+              { value: "owner", label: "Men mulk egasiman" },
+              { value: "agent", label: "Men vositachiman" },
+            ].map((opt) => (
+              <label
+                key={opt.value}
+                className={`flex-1 cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm ${form.listedBy === opt.value
+                    ? "border-ink-700 bg-ink-700 text-paper-100"
+                    : "border-line bg-white text-ink"
+                  }`}
+              >
+                <input
+                  type="radio"
+                  name="listedBy"
+                  value={opt.value}
+                  checked={form.listedBy === opt.value}
+                  onChange={handleChange}
+                  className="hidden"
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+
+          {/* Faqat vositachi tanlanganda ko'rinadi — shaffoflik uchun majburiy */}
+          {form.listedBy === "agent" && (
+            <div className="mt-3">
+              <label className="mb-1 block text-sm text-ink">
+                Komissiya foizi (%)
+              </label>
+              <input
+                type="text"
+                name="commissionPercent"
+                value={form.commissionPercent}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    commissionPercent: e.target.value.replace(/[^0-9]/g, ""),
+                  })
+                }
+                onKeyDown={handleIntegerKeyDown}
+                required
+                inputMode="numeric"
+                placeholder="masalan 30"
+                className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
+              />
+              <p className="mt-1 text-xs text-muted-2">
+                Bu foiz ijarachiga e'lon sahifasida aniq ko'rsatiladi
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Sharoit va jihoz */}
         <div>
           <label className="mb-2 block text-sm text-ink">Sharoit va jihoz</label>
@@ -310,14 +376,14 @@ export default function NewListing() {
         {/* Qo'shimcha ma'lumot */}
         <div>
           <label className="mb-1 block text-sm text-ink">
-            Uyning aniq malumotlari Masalan: Uyning aniq manzili, Honalar olchami ...  <span className="text-muted-2">(majburiy)</span>
+            Uy xaqida qisqacha ma'lumot <span className="text-muted-2">(majburiy)</span>
           </label>
           <textarea
             name="description"
             value={form.description}
             onChange={handleChange}
             rows={4}
-            required={true}
+            placeholder="Maktabga, bog'chaga yaqin, Keng va yorqin xonalar ..."
             className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
           />
         </div>

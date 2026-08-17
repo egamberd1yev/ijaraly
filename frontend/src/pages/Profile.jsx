@@ -3,23 +3,23 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext";
 
-const SOCIAL_FIELDS = [
-  { name: "instagram", label: "Instagram", placeholder: "https://instagram.com/foydalanuvchi" },
-  { name: "telegram", label: "Telegram", placeholder: "https://t.me/foydalanuvchi" },
-  { name: "facebook", label: "Facebook", placeholder: "https://facebook.com/foydalanuvchi" },
+const SOCIAL_PLATFORMS = [
+  { key: "instagram", label: "Instagram", usernamePlaceholder: "foydalanuvchi", urlPlaceholder: "https://instagram.com/foydalanuvchi" },
+  { key: "telegram", label: "Telegram", usernamePlaceholder: "foydalanuvchi", urlPlaceholder: "https://t.me/foydalanuvchi" },
+  { key: "facebook", label: "Facebook", usernamePlaceholder: "Aziz Aripov", urlPlaceholder: "https://facebook.com/foydalanuvchi" },
 ];
+
+const EMPTY_SOCIAL = { instagram: { username: "", url: "" }, telegram: { username: "", url: "" }, facebook: { username: "", url: "" } };
 
 export default function Profile() {
   const { user, loading: authLoading, setUser } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    fullName: "",
-    phone: "",
-    instagram: "",
-    telegram: "",
-    facebook: "",
-  });
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  // Har bir tarmoq uchun { username, url } — profil formasida ikkita alohida input
+  const [social, setSocial] = useState(EMPTY_SOCIAL);
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -33,18 +33,31 @@ export default function Profile() {
   // Foydalanuvchi ma'lumoti kelganda formani to'ldiramiz
   useEffect(() => {
     if (!user) return;
-    setForm({
-      fullName: user.fullName || "",
-      phone: user.phone || "",
-      instagram: user.socialLinks?.instagram || "",
-      telegram: user.socialLinks?.telegram || "",
-      facebook: user.socialLinks?.facebook || "",
+    setFullName(user.fullName || "");
+    setPhone(user.phone || "");
+    setSocial({
+      instagram: { ...EMPTY_SOCIAL.instagram, ...(user.socialLinks?.instagram || {}) },
+      telegram: { ...EMPTY_SOCIAL.telegram, ...(user.socialLinks?.telegram || {}) },
+      facebook: { ...EMPTY_SOCIAL.facebook, ...(user.socialLinks?.facebook || {}) },
     });
   }, [user]);
 
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  function handleSocialChange(platform, field, value) {
+    setSocial((prev) => ({
+      ...prev,
+      [platform]: { ...prev[platform], [field]: value },
+    }));
     setSuccess(false);
+  }
+
+  // Foydalanuvchi "t.me/foydalanuvchi" kabi https:// siz yozsa ham,
+  // saqlashdan oldin avtomatik to'g'rilaymiz — aks holda backend
+  // "noto'g'ri link" deb rad etadi
+  function normalizeUrl(value) {
+    const trimmed = value.trim();
+    if (!trimmed) return "";
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
   }
 
   async function handleSubmit(e) {
@@ -54,14 +67,16 @@ export default function Profile() {
     setSaving(true);
 
     try {
+      const normalizedSocial = {
+        instagram: { ...social.instagram, url: normalizeUrl(social.instagram.url) },
+        telegram: { ...social.telegram, url: normalizeUrl(social.telegram.url) },
+        facebook: { ...social.facebook, url: normalizeUrl(social.facebook.url) },
+      };
+
       const res = await api.put("/auth/me", {
-        fullName: form.fullName,
-        phone: form.phone || null,
-        socialLinks: {
-          instagram: form.instagram,
-          telegram: form.telegram,
-          facebook: form.facebook,
-        },
+        fullName,
+        phone: phone || null,
+        socialLinks: normalizedSocial,
       });
       setUser(res.data.user);
       setSuccess(true);
@@ -96,9 +111,8 @@ export default function Profile() {
             <label className="mb-1 block text-sm text-ink">To'liq ism</label>
             <input
               type="text"
-              name="fullName"
-              value={form.fullName}
-              onChange={handleChange}
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               required
               className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
             />
@@ -107,31 +121,45 @@ export default function Profile() {
             <label className="mb-1 block text-sm text-ink">Telefon</label>
             <input
               type="tel"
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               placeholder="+998901234567"
               className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
             />
           </div>
         </div>
 
-        <div className="space-y-4 rounded-xl border border-line bg-white p-4">
-          <p className="text-sm font-medium text-ink">Ijtimoiy tarmoqlar</p>
-          <p className="-mt-3 text-xs text-muted-2">
-            E'lonlaringizni ko'rgan foydalanuvchilar shu orqali siz bilan bog'lanishi mumkin
-          </p>
-          {SOCIAL_FIELDS.map((field) => (
-            <div key={field.name}>
-              <label className="mb-1 block text-sm text-ink">{field.label}</label>
-              <input
-                type="text"
-                name={field.name}
-                value={form[field.name]}
-                onChange={handleChange}
-                placeholder={field.placeholder}
-                className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
-              />
+        <div className="space-y-5 rounded-xl border border-line bg-white p-4">
+          <div>
+            <p className="text-sm font-medium text-ink">Ijtimoiy tarmoqlar</p>
+            <p className="mt-0.5 text-xs text-muted-2">
+              Nikni kiriting — e'lon sahifasida shu nik ko'rinadi va bosilganda linkka olib boradi
+            </p>
+          </div>
+
+          {SOCIAL_PLATFORMS.map((platform) => (
+            <div key={platform.key} className="space-y-2 border-t border-line pt-4 first:border-t-0 first:pt-0">
+              <p className="text-sm font-medium text-ink">{platform.label}</p>
+              <div>
+                <label className="mb-1 block text-xs text-muted">Nik / ism</label>
+                <input
+                  type="text"
+                  value={social[platform.key].username}
+                  onChange={(e) => handleSocialChange(platform.key, "username", e.target.value)}
+                  placeholder={platform.usernamePlaceholder}
+                  className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-muted">Link</label>
+                <input
+                  type="text"
+                  value={social[platform.key].url}
+                  onChange={(e) => handleSocialChange(platform.key, "url", e.target.value)}
+                  placeholder={platform.urlPlaceholder}
+                  className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
+                />
+              </div>
             </div>
           ))}
         </div>

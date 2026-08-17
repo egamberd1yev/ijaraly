@@ -60,6 +60,18 @@ export const Listing = new EntitySchema({
       enum: ["som", "dollar"],
       default: "som",
     },
+    // Kim joylayotgani: mulk egasi bevosita, yoki vositachi (rieltor)
+    listedBy: {
+      type: "enum",
+      enum: ["owner", "agent"],
+      default: "owner",
+    },
+    // Faqat listedBy === "agent" bo'lganda mazmunli — vositachi
+    // xizmati uchun komissiya foizi (masalan 30 = 30%)
+    commissionPercent: {
+      type: "int",
+      nullable: true,
+    },
     description: {
       type: "text",
       nullable: true,

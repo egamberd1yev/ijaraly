@@ -18,6 +18,8 @@ export async function createListing(req, res) {
       roomCount,
       price,
       currency,
+      listedBy,
+      commissionPercent,
       description,
     } = req.body;
 
@@ -34,6 +36,8 @@ export async function createListing(req, res) {
       roomCount,
       price,
       currency: currency || "som",
+      listedBy: listedBy || "owner",
+      commissionPercent: listedBy === "agent" ? commissionPercent : null,
       description: description || null,
       status: "active",
     });

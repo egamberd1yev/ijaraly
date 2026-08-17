@@ -88,6 +88,22 @@ export const createListingSchema = Joi.object({
   currency: Joi.string().valid("som", "dollar").default("som").messages({
     "any.only": "Valyuta 'som' yoki 'dollar' bo'lishi kerak",
   }),
+  listedBy: Joi.string().valid("owner", "agent").default("owner").messages({
+    "any.only": "'owner' yoki 'agent' bo'lishi kerak",
+  }),
+  // Faqat vositachi (agent) tanlanganda komissiya foizi majburiy —
+  // mulk egasi uchun bu maydon kerak emas
+  commissionPercent: Joi.number()
+    .integer()
+    .min(0)
+    .max(100)
+    .when("listedBy", {
+      is: "agent",
+      then: Joi.required().messages({
+        "any.required": "Vositachi uchun komissiya foizi kiritilishi shart",
+      }),
+      otherwise: Joi.optional().allow(null),
+    }),
   description: Joi.string().max(2000).allow(null, ""),
 });
 
@@ -102,6 +118,8 @@ export const updateListingSchema = Joi.object({
   roomCount: Joi.number().integer().min(1).max(50),
   price: Joi.number().integer().min(0),
   currency: Joi.string().valid("som", "dollar"),
+  listedBy: Joi.string().valid("owner", "agent"),
+  commissionPercent: Joi.number().integer().min(0).max(100).allow(null),
   description: Joi.string().max(2000).allow(null, ""),
   status: Joi.string().valid("active", "rented", "inactive"),
 });

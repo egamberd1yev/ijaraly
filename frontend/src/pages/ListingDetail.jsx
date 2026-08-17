@@ -64,7 +64,9 @@ export default function ListingDetail() {
   const images = listing.images || [];
   const owner = listing.owner || {};
   const socialLinks = owner.socialLinks || {};
-  const hasSocialLinks = Object.values(socialLinks).some((v) => v);
+  const hasSocialLinks = Object.values(socialLinks).some(
+    (data) => data?.username || data?.url
+  );
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
@@ -89,8 +91,9 @@ export default function ListingDetail() {
               <button
                 key={i}
                 onClick={() => setActiveImage(i)}
-                className={`h-16 w-16 overflow-hidden rounded-lg border-2 ${i === activeImage ? "border-ink-700" : "border-transparent"
-                  }`}
+                className={`h-16 w-16 overflow-hidden rounded-lg border-2 ${
+                  i === activeImage ? "border-ink-700" : "border-transparent"
+                }`}
               >
                 <img
                   src={getImageUrl(img)}
@@ -112,6 +115,18 @@ export default function ListingDetail() {
           <p className="mt-1 text-xl font-medium text-ink-700">
             {formatPrice(listing.price, listing.currency)}
           </p>
+
+          <div className="mt-2">
+            {listing.listedBy === "agent" ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gold-100 px-3 py-1 text-xs font-medium text-gold-600">
+                Vositachi orqali • Komissiya: {listing.commissionPercent}%
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-ink-700/10 px-3 py-1 text-xs font-medium text-ink-700">
+                Bevosita mulk egasidan
+              </span>
+            )}
+          </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
             <Badge>{listing.renovationType === "yevro" ? "Yevro remont" : "Oddiy remont"}</Badge>
@@ -164,30 +179,26 @@ export default function ListingDetail() {
 
             {hasSocialLinks && (
               <div className="mt-3 flex flex-col gap-1.5">
-                {Object.entries(socialLinks).map(([key, value]) => {
-                  if (!value) return null;
+                {Object.entries(socialLinks).map(([key, data]) => {
+                  const username = data?.username;
+                  const url = data?.url;
+                  if (!username && !url) return null;
                   const label = SOCIAL_LABELS[key] || key;
-                  const isLink = value.startsWith("http");
-
-                  // Havoladan foydalanuvchi nikini ajratib olish:
-                  // Oxiridagi sleshni (/) olib tashlaymiz va '/' ga bo'lib oxirgi elementni olamiz
-                  const displayValue = isLink ? value.replace(/\/$/, "").split("/").pop() : value;
-
+                  const displayText = username || url;
                   return (
-                    <div key={key} className="text-sm flex flex-wrap gap-1">
+                    <div key={key} className="text-sm">
                       <span className="text-muted-2">{label}: </span>
-                      {isLink ? (
+                      {url ? (
                         <a
-                          href={value}
+                          href={url}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-ink-700 hover:underline truncate max-w-full"
-                          title={value}
+                          className="text-ink-700 hover:underline"
                         >
-                          @{displayValue}
+                          {displayText}
                         </a>
                       ) : (
-                        <span className="text-ink truncate max-w-full">{value}</span>
+                        <span className="text-ink">{displayText}</span>
                       )}
                     </div>
                   );
@@ -195,7 +206,7 @@ export default function ListingDetail() {
               </div>
             )}
           </div>
-        </div>  
+        </div>
       </div>
     </div>
   );
