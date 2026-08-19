@@ -137,3 +137,28 @@ export const listingQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(50).default(12),
 });
+
+// ---- Shartnoma ----
+
+export const createContractSchema = Joi.object({
+  renterFullName: Joi.string().min(2).max(150).required().messages({
+    "string.empty": "Ijarachining to'liq ismi kiritilishi shart",
+  }),
+  renterPassport: Joi.string().min(4).max(50).required().messages({
+    "string.empty": "Pasport seriya-raqami kiritilishi shart",
+  }),
+  renterPhone: Joi.string()
+    .pattern(/^\+?[0-9]{7,15}$/)
+    .allow(null, "")
+    .messages({
+      "string.pattern.base": "Telefon raqami noto'g'ri formatda",
+    }),
+  startDate: Joi.date().required().messages({
+    "any.required": "Boshlanish sanasi kiritilishi shart",
+    "date.base": "Boshlanish sanasi noto'g'ri",
+  }),
+  endDate: Joi.date().greater(Joi.ref("startDate")).required().messages({
+    "any.required": "Tugash sanasi kiritilishi shart",
+    "date.greater": "Tugash sanasi boshlanish sanasidan keyin bo'lishi kerak",
+  }),
+});

@@ -3,6 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import api from "../api/client";
 import { getImageUrl } from "../api/getImageUrl";
 import { formatPrice } from "../utils/format";
+import { useAuth } from "../context/AuthContext";
+import ContractModal from "../components/ContractModal";
 
 const SOCIAL_LABELS = {
   instagram: "Instagram",
@@ -12,11 +14,14 @@ const SOCIAL_LABELS = {
 
 export default function ListingDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [listing, setListing] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [showContractModal, setShowContractModal] = useState(false);
+  const [createdContractUrl, setCreatedContractUrl] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -206,8 +211,48 @@ export default function ListingDetail() {
               </div>
             )}
           </div>
+
+          {/* Faqat e'lon egasiga ko'rinadi */}
+          {user && listing.owner?.id === user.id && (
+            <div className="mt-4 rounded-xl border border-line bg-white p-4">
+              <h2 className="mb-1 text-sm font-medium text-ink">
+                Ijara shartnomasi
+              </h2>
+              <p className="mb-3 text-xs text-muted-2">
+                Ijarachi bilan standart shartnoma tuzib, PDF shaklida yuklab
+                oling.
+              </p>
+              <button
+                onClick={() => setShowContractModal(true)}
+                className="w-full rounded-lg bg-ink-700 py-2 text-sm font-medium text-paper-100 hover:bg-ink-900"
+              >
+                Shartnoma tuzish
+              </button>
+
+              {createdContractUrl && (
+                <a
+                  href={getImageUrl(createdContractUrl)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 block rounded-lg bg-gold-100 py-2 text-center text-sm font-medium text-gold-600 hover:bg-gold-500/20"
+                >
+                  Shartnoma tayyor — yuklab olish
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
+
+      <ContractModal
+        open={showContractModal}
+        listingId={listing.id}
+        onClose={() => setShowContractModal(false)}
+        onCreated={(contract) => {
+          setCreatedContractUrl(contract.pdfUrl);
+          setShowContractModal(false);
+        }}
+      />
     </div>
   );
 }

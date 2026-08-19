@@ -7,6 +7,7 @@ import Signup from "./pages/Signup";
 import ListingDetail from "./pages/ListingDetail";
 import NewListing from "./pages/NewListing";
 import Dashboard from "./pages/Dashboard";
+import Contracts from "./pages/Contracts";
 import Profile from "./pages/Profile";
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
             <Route path="/listings/new" element={<NewListing />} />
             <Route path="/listings/:id" element={<ListingDetail />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/contracts" element={<Contracts />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
         </Routes>

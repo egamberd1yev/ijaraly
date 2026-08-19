@@ -46,6 +46,12 @@ export default function Header() {
               >
                 Mening e'lonlarim
               </Link>
+              <Link
+                to="/contracts"
+                className="text-sm text-[#CFE3DD] hover:text-paper-100"
+              >
+                Shartnomalarim
+              </Link>
               <Link to="/profile" title={user.fullName}>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gold-500 text-xs font-medium text-[#4A2E06]">
                   {user.fullName?.slice(0, 2).toUpperCase()}

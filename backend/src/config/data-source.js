@@ -3,6 +3,7 @@ import { DataSource } from "typeorm";
 import dotenv from "dotenv";
 import { User } from "../entities/User.js";
 import { Listing } from "../entities/Listing.js";
+import { Contract } from "../entities/Contract.js";
 
 dotenv.config();
 
@@ -17,5 +18,5 @@ export const AppDataSource = new DataSource({
   // migratsiyalardan foydalanish tavsiya etiladi.
   synchronize: true,
   logging: false,
-  entities: [User, Listing],
+  entities: [User, Listing, Contract],
 });
