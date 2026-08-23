@@ -1,9 +1,23 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import api from "../api/client";
 
 export default function Header() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    api
+      .get("/notifications/mine")
+      .then((res) => {
+        const unread = res.data.notifications.filter((n) => !n.isRead).length;
+        setUnreadCount(unread);
+      })
+      .catch(() => {});
+  }, [user]);
 
   function handleLogout() {
     logout();
@@ -52,6 +66,25 @@ export default function Header() {
               >
                 Shartnomalarim
               </Link>
+              <Link
+                to="/users/search"
+                title="Foydalanuvchilarni qidirish"
+                className="text-[#CFE3DD] hover:text-paper-100"
+              >
+                <SearchIcon />
+              </Link>
+              <Link
+                to="/notifications"
+                title="Bildirishnomalar"
+                className="relative text-[#CFE3DD] hover:text-paper-100"
+              >
+                <BellIcon />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gold-500 text-[10px] font-medium text-[#4A2E06]">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Link>
               <Link to="/profile" title={user.fullName}>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gold-500 text-xs font-medium text-[#4A2E06]">
                   {user.fullName?.slice(0, 2).toUpperCase()}
@@ -83,5 +116,28 @@ export default function Header() {
         </nav>
       </div>
     </header>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+      <path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function BellIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path d="M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" strokeWidth="2" />
+    </svg>
   );
 }

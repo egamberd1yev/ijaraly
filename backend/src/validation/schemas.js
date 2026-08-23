@@ -162,3 +162,32 @@ export const createContractSchema = Joi.object({
     "date.greater": "Tugash sanasi boshlanish sanasidan keyin bo'lishi kerak",
   }),
 });
+
+// ---- Foydalanuvchi qidiruvi, shikoyat, izoh ----
+
+export const userSearchQuerySchema = Joi.object({
+  q: Joi.string().min(2).max(150).required().messages({
+    "string.empty": "Qidiruv so'zi kiritilishi shart",
+    "string.min": "Kamida 2 ta belgi kiriting",
+  }),
+});
+
+export const createReportSchema = Joi.object({
+  reason: Joi.string().min(10).max(1000).required().messages({
+    "string.empty": "Shikoyat sababi kiritilishi shart",
+    "string.min": "Sababni batafsilroq yozing (kamida 10 ta belgi)",
+  }),
+  // "Bularning barchasi haqiqat" checkbox'i — aynan true bo'lishi shart,
+  // aks holda shikoyat "tasdiqlanmagan" deb hisoblanadi va yuborilmaydi
+  affirmedTruth: Joi.boolean().valid(true).required().messages({
+    "any.only": "Yozganlaringiz haqiqat ekanligini tasdiqlashingiz kerak",
+    "any.required": "Yozganlaringiz haqiqat ekanligini tasdiqlashingiz kerak",
+  }),
+});
+
+export const createCommentSchema = Joi.object({
+  text: Joi.string().min(3).max(1000).required().messages({
+    "string.empty": "Izoh matni kiritilishi shart",
+    "string.min": "Izoh juda qisqa",
+  }),
+});

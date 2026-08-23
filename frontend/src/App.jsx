@@ -9,6 +9,9 @@ import NewListing from "./pages/NewListing";
 import Dashboard from "./pages/Dashboard";
 import Contracts from "./pages/Contracts";
 import Profile from "./pages/Profile";
+import UserSearch from "./pages/UserSearch";
+import PublicProfile from "./pages/PublicProfile";
+import Notifications from "./pages/Notifications";
 
 export default function App() {
   return (
@@ -24,6 +27,9 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/contracts" element={<Contracts />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/users/search" element={<UserSearch />} />
+            <Route path="/users/:id" element={<PublicProfile />} />
+            <Route path="/notifications" element={<Notifications />} />
           </Route>
         </Routes>
       </BrowserRouter>

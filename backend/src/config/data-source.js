@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 import { User } from "../entities/User.js";
 import { Listing } from "../entities/Listing.js";
 import { Contract } from "../entities/Contract.js";
+import { Report } from "../entities/Report.js";
+import { Notification } from "../entities/Notification.js";
+import { Comment } from "../entities/Comment.js";
 
 dotenv.config();
 
@@ -18,5 +21,5 @@ export const AppDataSource = new DataSource({
   // migratsiyalardan foydalanish tavsiya etiladi.
   synchronize: true,
   logging: false,
-  entities: [User, Listing, Contract],
+  entities: [User, Listing, Contract, Report, Comment, Notification],
 });

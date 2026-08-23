@@ -9,6 +9,8 @@ import authRoutes from "./routes/auth.routes.js";
 import listingRoutes from "./routes/listing.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import contractRoutes from "./routes/contract.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
+import userRoutes from "./routes/user.routes.js";
 import { startExpirationJob } from "./jobs/expireListings.js";
 
 // ES modules'da __dirname mavjud emas, shuning uchun import.meta.url orqali quramiz
@@ -31,6 +33,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/listings", listingRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api", contractRoutes);
+app.use("/api", notificationRoutes);
+app.use("/api", userRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", message: "Server ishlayapti" });

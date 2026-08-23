@@ -1,5 +1,7 @@
 import { AppDataSource } from "../config/data-source.js";
 import { Listing } from "../entities/Listing.js";
+import { checkCanPostListing } from "../utils/moderateUser.js";
+import { createNotification } from "../utils/createNotification.js";
 
 const listingRepo = () => AppDataSource.getRepository(Listing);
 
@@ -7,6 +9,11 @@ const listingRepo = () => AppDataSource.getRepository(Listing);
 // req.body Joi orqali allaqachon tekshirilgan (validate middleware)
 export async function createListing(req, res) {
   try {
+    const canPost = await checkCanPostListing(req.userId);
+    if (!canPost.allowed) {
+      return res.status(403).json({ message: canPost.message });
+    }
+
     const {
       images,
       address,
@@ -167,6 +174,16 @@ export async function updateListing(req, res) {
 
     Object.assign(listing, req.body);
     await repo.save(listing);
+
+    if (req.body.status === "rented") {
+      await createNotification({
+        userId: listing.ownerId,
+        type: "listing_rented",
+        message: `"${listing.address}" e'loni ijaraga berildi deb belgilandi.`,
+        relatedListingId: listing.id,
+      });
+    }
+
     return res.json({ listing });
   } catch (err) {
     console.error(err);

@@ -64,6 +64,12 @@ export async function login(req, res) {
       return res.status(401).json({ message: "Email yoki parol noto'g'ri" });
     }
 
+    if (user.accountStatus === "blocked") {
+      return res.status(403).json({
+        message: "Akkauntingiz qoidabuzarliklar sababli bloklangan",
+      });
+    }
+
     const token = generateToken(user.id);
     return res.json({ user: toPublicUser(user), token });
   } catch (err) {

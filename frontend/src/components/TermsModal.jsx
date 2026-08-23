@@ -89,7 +89,14 @@ const SECTIONS = [
   },
   {
     title: "11. Bog'lanish",
-    items: ["Ushbu Shartlar yuzasidan savollar bo'lsa, biz bilan bog'laning: +998-50-204-49-52"],
+    items: ["Ushbu Shartlar yuzasidan savollar bo'lsa, biz bilan bog'laning."],
+  },
+  {
+    title: "12. Foydalanuvchilarni qidirish bo'limi",
+    items: [
+      "12.1. Platformadagi \"Foydalanuvchilarni qidirish\" bo'limi (profil qidirish, izoh qoldirish, shikoyat qilish) o'zining qo'shimcha qoidalariga ega.",
+      "12.2. Ro'yxatdan o'tish orqali siz ushbu qo'shimcha qoidalarga ham oldindan rozilik bildirgan hisoblanasiz va ularni buzmaslikka majbursiz.",
+    ],
   },
 ];
 
