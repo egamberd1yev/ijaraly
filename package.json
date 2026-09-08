@@ -16,5 +16,8 @@
     "url": "https://github.com/egamberd1yev/ijaraly/issues"
   },
   "homepage": "https://github.com/egamberd1yev/ijaraly#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "cloudinary": "^2.11.0"
+  }
 }

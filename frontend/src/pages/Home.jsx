@@ -4,19 +4,23 @@ import api from "../api/client";
 import { getImageUrl } from "../api/getImageUrl";
 import { formatPrice } from "../utils/format";
 
-const ROOM_OPTIONS = [1, 2, 3, 4, 5];
+const ROOM_OPTIONS = [1, 2, 3, 4];
 const PAGE_LIMIT = 12;
 
 export default function Home() {
-  // Qidiruv input'i alohida saqlanadi, faqat submit bosilganda "appliedAddress"ga o'tadi.
-  // Shunda har bir harf kiritilganda emas, faqat qidiruv bosilganda so'rov ketadi.
   const [addressInput, setAddressInput] = useState("");
   const [appliedAddress, setAppliedAddress] = useState("");
 
-  const [renovationType, setRenovationType] = useState(null); // "oddiy" | "yevro" | null
+  const [renovationType, setRenovationType] = useState(null);
   const [allUtilities, setAllUtilities] = useState(false);
   const [hasFurniture, setHasFurniture] = useState(false);
+
   const [roomCount, setRoomCount] = useState(null);
+  const [roomCountPlus, setRoomCountPlus] = useState(false);
+
+  const [suitableFor, setSuitableFor] = useState(null);
+  const [childrenAllowed, setChildrenAllowed] = useState(false);
+  const [petsAllowed, setPetsAllowed] = useState(false);
 
   const [listings, setListings] = useState([]);
   const [page, setPage] = useState(1);
@@ -36,13 +40,32 @@ export default function Home() {
         params.hasElectricity = true;
       }
       if (hasFurniture) params.hasFurniture = true;
-      if (roomCount) params.roomCount = roomCount;
+
+      if (roomCountPlus) {
+        params.minRoomCount = 5;
+      } else if (roomCount) {
+        params.roomCount = roomCount;
+      }
+
+      if (suitableFor) params.suitableFor = suitableFor;
+      if (childrenAllowed) params.childrenAllowed = true;
+      if (petsAllowed) params.petsAllowed = true;
+
       return params;
     },
-    [appliedAddress, renovationType, allUtilities, hasFurniture, roomCount]
+    [
+      appliedAddress,
+      renovationType,
+      allUtilities,
+      hasFurniture,
+      roomCount,
+      roomCountPlus,
+      suitableFor,
+      childrenAllowed,
+      petsAllowed,
+    ]
   );
 
-  // Filterlar o'zgarganda 1-sahifadan qayta yuklaymiz
   useEffect(() => {
     setLoading(true);
     setError("");
@@ -81,17 +104,38 @@ export default function Home() {
   }
 
   function toggleRoomCount(count) {
+    setRoomCountPlus(false);
     setRoomCount((prev) => (prev === count ? null : count));
   }
+
+  function toggleRoomCountPlus() {
+    setRoomCount(null);
+    setRoomCountPlus((prev) => !prev);
+  }
+
+  // "Talaba" va "Bolali oilalar mumkin" bir-biri bilan mantiqan mos kelmaydi —
+  // chunki childrenAllowed faqat "oila" turidagi e'lonlarda mavjud. Shuning
+  // uchun "talaba" tanlanganda, "bolali oilalar" avtomatik o'chadi.
+  function toggleSuitableFor(value) {
+    setSuitableFor((prev) => {
+      const next = prev === value ? null : value;
+      if (next === "talaba") {
+        setChildrenAllowed(false);
+      }
+      return next;
+    });
+  }
+
+  const childrenChipDisabled = suitableFor === "talaba";
 
   const chipBase =
     "rounded-full border px-3.5 py-1.5 text-xs transition-colors cursor-pointer select-none";
   const chipActive = "border-gold-600 bg-gold-100 text-gold-600";
   const chipInactive = "border-line text-muted hover:border-ink-700/40";
+  const chipDisabled = "border-line text-muted-2/50 cursor-not-allowed opacity-50";
 
   return (
     <div>
-      {/* Hero + qidiruv */}
       <div className="px-6 pb-6 pt-12 text-center">
         <h1 className="font-display text-2xl font-medium text-ink-900 sm:text-3xl">
           Uzoq muddatga ijara — ishonchli va oddiy
@@ -120,8 +164,7 @@ export default function Home() {
         </form>
       </div>
 
-      {/* Filter chip'lar */}
-      <div className="flex flex-wrap justify-center gap-2 px-6 pb-8">
+      <div className="flex flex-wrap justify-center gap-2 px-6 pb-3">
         <button
           onClick={() => toggleRenovation("yevro")}
           className={`${chipBase} ${renovationType === "yevro" ? chipActive : chipInactive}`}
@@ -155,9 +198,49 @@ export default function Home() {
             {count} hona
           </button>
         ))}
+        <button
+          onClick={toggleRoomCountPlus}
+          className={`${chipBase} ${roomCountPlus ? chipActive : chipInactive}`}
+        >
+          5+ hona
+        </button>
       </div>
 
-      {/* Natijalar */}
+      <div className="flex flex-wrap justify-center gap-2 px-6 pb-8">
+        <button
+          onClick={() => toggleSuitableFor("oila")}
+          className={`${chipBase} ${suitableFor === "oila" ? chipActive : chipInactive}`}
+        >
+          Oilalar uchun
+        </button>
+        <button
+          onClick={() => toggleSuitableFor("talaba")}
+          className={`${chipBase} ${suitableFor === "talaba" ? chipActive : chipInactive}`}
+        >
+          Talabalar uchun
+        </button>
+        <button
+          onClick={() => !childrenChipDisabled && setChildrenAllowed((v) => !v)}
+          disabled={childrenChipDisabled}
+          title={
+            childrenChipDisabled
+              ? "Talabalar uchun e'lonlarda bu shart qo'llanilmaydi"
+              : undefined
+          }
+          className={`${chipBase} ${
+            childrenChipDisabled ? chipDisabled : childrenAllowed ? chipActive : chipInactive
+          }`}
+        >
+          Bolali oilalar mumkin
+        </button>
+        <button
+          onClick={() => setPetsAllowed((v) => !v)}
+          className={`${chipBase} ${petsAllowed ? chipActive : chipInactive}`}
+        >
+          Uy hayvoni bilan mumkin
+        </button>
+      </div>
+
       <div className="mx-auto max-w-6xl px-6 pb-16">
         {loading && <p className="text-center text-muted">Yuklanmoqda...</p>}
         {error && <p className="text-center text-red-700">{error}</p>}
@@ -190,13 +273,13 @@ export default function Home() {
   );
 }
 
+const SUITABLE_LABELS = { oila: "Oilaga", talaba: "Talabaga", farqi_yoq: "Hammaga" };
+
 function ListingCard({ listing }) {
   const conditionText = [
     listing.renovationType === "yevro" ? "Yevro" : "Oddiy",
     `${listing.roomCount} hona`,
-    listing.hasGas && listing.hasWater && listing.hasElectricity
-      ? "Barcha sharoit"
-      : null,
+    listing.hasGas && listing.hasWater && listing.hasElectricity ? "Barcha sharoit" : null,
   ]
     .filter(Boolean)
     .join(" • ");
@@ -228,7 +311,12 @@ function ListingCard({ listing }) {
             </span>
           )}
         </div>
-        <p className="mb-2 text-xs text-muted-2">{conditionText}</p>
+        <p className="mb-1 text-xs text-muted-2">{conditionText}</p>
+        {listing.suitableFor && listing.suitableFor !== "farqi_yoq" && (
+          <p className="mb-1 text-xs text-gold-600">
+            {SUITABLE_LABELS[listing.suitableFor]} mos
+          </p>
+        )}
         <p className="text-sm font-medium text-ink-700">
           {formatPrice(listing.price, listing.currency)}
         </p>

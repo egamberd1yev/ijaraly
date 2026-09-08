@@ -1,22 +1,31 @@
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
 import { AppDataSource } from "../config/data-source.js";
 import { Listing } from "../entities/Listing.js";
 import { Contract } from "../entities/Contract.js";
 import { User } from "../entities/User.js";
 import { generateContractPdf } from "../utils/generateContractPdf.js";
+import { createNotification } from "../utils/createNotification.js";
+import cloudinary from "../utils/cloudinary.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const contractsDir = path.join(__dirname, "..", "..", "uploads", "contracts");
-if (!fs.existsSync(contractsDir)) {
-  fs.mkdirSync(contractsDir, { recursive: true });
+// PDF buffer'ni Cloudinary'ga "raw" fayl sifatida yuklaydi (rasm emas,
+// hujjat sifatida) va uning to'liq havolasini qaytaradi
+function uploadPdfToCloudinary(buffer, publicId) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "ijaraly/contracts",
+        public_id: publicId,
+        resource_type: "raw",
+        format: "pdf",
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result.secure_url);
+      }
+    );
+    stream.end(buffer);
+  });
 }
 
-// E'lon egasi shartnoma tuzadi — ijarachi ma'lumotlari qo'lda kiritiladi
-// (req.body Joi orqali allaqachon tekshirilgan)
 export async function createContract(req, res) {
   try {
     const listingRepo = AppDataSource.getRepository(Listing);
@@ -24,22 +33,16 @@ export async function createContract(req, res) {
     const userRepo = AppDataSource.getRepository(User);
 
     const listing = await listingRepo.findOne({ where: { id: req.params.id } });
-    if (!listing) {
-      return res.status(404).json({ message: "E'lon topilmadi" });
-    }
+    if (!listing) return res.status(404).json({ message: "E'lon topilmadi" });
     if (listing.ownerId !== req.userId) {
-      return res
-        .status(403)
-        .json({ message: "Faqat e'lon egasi shartnoma tuza oladi" });
+      return res.status(403).json({ message: "Faqat e'lon egasi shartnoma tuza oladi" });
     }
 
     const owner = await userRepo.findOne({ where: { id: req.userId } });
+    const { renterFullName, renterPassport, renterPhone, startDate, endDate } = req.body;
 
-    const { renterFullName, renterPassport, renterPhone, startDate, endDate } =
-      req.body;
-
-    // Avval yozuvni saqlaymiz (createdAt va id shu yerda hosil bo'ladi),
-    // keyin shu ma'lumotlar asosida PDF yaratamiz
+    // Avval yozuvni saqlaymiz — shu orqali contract.id va createdAt hosil bo'ladi,
+    // ular PDF matnida va Cloudinary fayl nomida ishlatiladi
     const contract = contractRepo.create({
       listingId: listing.id,
       ownerId: req.userId,
@@ -51,28 +54,30 @@ export async function createContract(req, res) {
       renterPhone: renterPhone || null,
       startDate,
       endDate,
-      pdfFilename: "", // pastda to'ldiriladi
+      pdfUrl: "", // pastda to'ldiriladi
     });
     await contractRepo.save(contract);
 
-    const pdfFilename = `contract-${contract.id}.pdf`;
-    const filePath = path.join(contractsDir, pdfFilename);
+    const pdfBuffer = await generateContractPdf({ listing, owner, contract });
+    const pdfUrl = await uploadPdfToCloudinary(pdfBuffer, `contract-${contract.id}`);
 
-    await generateContractPdf({ filePath, listing, owner, contract });
-
-    contract.pdfFilename = pdfFilename;
+    contract.pdfUrl = pdfUrl;
     await contractRepo.save(contract);
 
-    return res.status(201).json({
-      contract: { ...contract, pdfUrl: `/uploads/contracts/${pdfFilename}` },
+    await createNotification({
+      userId: req.userId,
+      type: "contract_created",
+      message: `"${listing.address}" uchun ${contract.renterFullName} bilan shartnoma tuzildi.`,
+      relatedListingId: listing.id,
     });
+
+    return res.status(201).json({ contract });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Shartnoma yaratishda xatolik yuz berdi" });
   }
 }
 
-// E'lon egasining barcha shartnomalari — "Mening shartnomalarim" sahifasi uchun
 export async function getMyContracts(req, res) {
   try {
     const contractRepo = AppDataSource.getRepository(Contract);
@@ -80,13 +85,7 @@ export async function getMyContracts(req, res) {
       where: { ownerId: req.userId },
       order: { createdAt: "DESC" },
     });
-
-    const withUrls = contracts.map((c) => ({
-      ...c,
-      pdfUrl: `/uploads/contracts/${c.pdfFilename}`,
-    }));
-
-    return res.json({ contracts: withUrls });
+    return res.json({ contracts });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Shartnomalarni yuklab bo'lmadi" });

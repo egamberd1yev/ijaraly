@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { RENOVATION_TYPES } from "../entities/Listing.js";
+import { RENOVATION_TYPES, SUITABLE_FOR_OPTIONS, STUDENT_GENDER_OPTIONS } from "../entities/Listing.js";
 
 // ---- Auth ----
 
@@ -15,9 +15,7 @@ export const signupSchema = Joi.object({
   phone: Joi.string()
     .pattern(/^\+?[0-9]{7,15}$/)
     .allow(null, "")
-    .messages({
-      "string.pattern.base": "Telefon raqami noto'g'ri formatda",
-    }),
+    .messages({ "string.pattern.base": "Telefon raqami noto'g'ri formatda" }),
   password: Joi.string().min(6).max(72).required().messages({
     "string.min": "Parol kamida 6 ta belgidan iborat bo'lishi kerak",
     "string.empty": "Parol kiritilishi shart",
@@ -33,12 +31,9 @@ export const loginSchema = Joi.object({
     "string.email": "Email manzili noto'g'ri formatda",
     "string.empty": "Email kiritilishi shart",
   }),
-  password: Joi.string().required().messages({
-    "string.empty": "Parol kiritilishi shart",
-  }),
+  password: Joi.string().required().messages({ "string.empty": "Parol kiritilishi shart" }),
 });
 
-// Har bir ijtimoiy tarmoq uchun: foydalanuvchi nomi (nik) va to'liq link
 const socialPlatformSchema = Joi.object({
   username: Joi.string().allow(null, "").max(100),
   url: Joi.string().uri().allow(null, "").messages({
@@ -91,19 +86,61 @@ export const createListingSchema = Joi.object({
   listedBy: Joi.string().valid("owner", "agent").default("owner").messages({
     "any.only": "'owner' yoki 'agent' bo'lishi kerak",
   }),
-  // Faqat vositachi (agent) tanlanganda komissiya foizi majburiy —
-  // mulk egasi uchun bu maydon kerak emas
+  // .empty(null) bilan birga — agent bo'lmasa "" yoki null ham xavfsiz o'tadi
   commissionPercent: Joi.number()
     .integer()
     .min(0)
     .max(100)
+    .empty(["", null])
     .when("listedBy", {
       is: "agent",
       then: Joi.required().messages({
         "any.required": "Vositachi uchun komissiya foizi kiritilishi shart",
       }),
+      otherwise: Joi.optional(),
+    }),
+
+  suitableFor: Joi.string()
+    .valid(...SUITABLE_FOR_OPTIONS)
+    .required()
+    .messages({
+      "any.required": "Uy kimlar uchun ekanini tanlashingiz shart",
+      "any.only": "Noto'g'ri tanlov",
+    }),
+  // DIQQAT: .empty("") — frontend bo'sh satr ("") yuborsa ham, Joi buni
+  // "berilmagan" deb hisoblaydi va "otherwise" shoxobchasiga o'tadi.
+  // Shu qatorning yo'qligi oldingi xatoning asosiy sababi edi.
+  childrenAllowed: Joi.boolean()
+    .empty("")
+    .when("suitableFor", {
+      is: "oila",
+      then: Joi.required().messages({
+        "any.required": "Yosh bolali oilalarga ruxsat borligini belgilang",
+      }),
       otherwise: Joi.optional().allow(null),
     }),
+  studentGender: Joi.string()
+    .valid(...STUDENT_GENDER_OPTIONS)
+    .empty("")
+    .when("suitableFor", {
+      is: "talaba",
+      then: Joi.required().messages({ "any.required": "Talabaning jinsini tanlang" }),
+      otherwise: Joi.optional().allow(null),
+    }),
+  maxStudents: Joi.number()
+    .integer()
+    .min(1)
+    .max(20)
+    .empty(["", null])
+    .when("suitableFor", {
+      is: "talaba",
+      then: Joi.required().messages({
+        "any.required": "Nechta talabagacha mumkinligini kiriting",
+      }),
+      otherwise: Joi.optional(),
+    }),
+  petsAllowed: Joi.boolean().empty("").allow(null).optional(),
+
   description: Joi.string().max(2000).allow(null, ""),
 });
 
@@ -119,7 +156,15 @@ export const updateListingSchema = Joi.object({
   price: Joi.number().integer().min(0),
   currency: Joi.string().valid("som", "dollar"),
   listedBy: Joi.string().valid("owner", "agent"),
-  commissionPercent: Joi.number().integer().min(0).max(100).allow(null),
+  commissionPercent: Joi.number().integer().min(0).max(100).empty(["", null]).optional(),
+  suitableFor: Joi.string().valid(...SUITABLE_FOR_OPTIONS),
+  childrenAllowed: Joi.boolean().empty("").allow(null),
+  studentGender: Joi.string()
+    .valid(...STUDENT_GENDER_OPTIONS)
+    .empty("")
+    .allow(null),
+  maxStudents: Joi.number().integer().min(1).max(20).empty(["", null]).optional(),
+  petsAllowed: Joi.boolean().empty("").allow(null),
   description: Joi.string().max(2000).allow(null, ""),
   status: Joi.string().valid("active", "rented", "inactive"),
 });
@@ -132,8 +177,13 @@ export const listingQuerySchema = Joi.object({
   hasElectricity: Joi.string().valid("true", "false"),
   hasFurniture: Joi.string().valid("true", "false"),
   roomCount: Joi.number().integer().min(1),
+  minRoomCount: Joi.number().integer().min(1),
   minPrice: Joi.number().integer().min(0),
   maxPrice: Joi.number().integer().min(0),
+  suitableFor: Joi.string().valid(...SUITABLE_FOR_OPTIONS),
+  childrenAllowed: Joi.string().valid("true", "false"),
+  studentGender: Joi.string().valid(...STUDENT_GENDER_OPTIONS),
+  petsAllowed: Joi.string().valid("true", "false"),
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(50).default(12),
 });
@@ -150,9 +200,7 @@ export const createContractSchema = Joi.object({
   renterPhone: Joi.string()
     .pattern(/^\+?[0-9]{7,15}$/)
     .allow(null, "")
-    .messages({
-      "string.pattern.base": "Telefon raqami noto'g'ri formatda",
-    }),
+    .messages({ "string.pattern.base": "Telefon raqami noto'g'ri formatda" }),
   startDate: Joi.date().required().messages({
     "any.required": "Boshlanish sanasi kiritilishi shart",
     "date.base": "Boshlanish sanasi noto'g'ri",
@@ -177,8 +225,6 @@ export const createReportSchema = Joi.object({
     "string.empty": "Shikoyat sababi kiritilishi shart",
     "string.min": "Sababni batafsilroq yozing (kamida 10 ta belgi)",
   }),
-  // "Bularning barchasi haqiqat" checkbox'i — aynan true bo'lishi shart,
-  // aks holda shikoyat "tasdiqlanmagan" deb hisoblanadi va yuborilmaydi
   affirmedTruth: Joi.boolean().valid(true).required().messages({
     "any.only": "Yozganlaringiz haqiqat ekanligini tasdiqlashingiz kerak",
     "any.required": "Yozganlaringiz haqiqat ekanligini tasdiqlashingiz kerak",

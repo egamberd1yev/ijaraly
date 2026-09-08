@@ -5,8 +5,6 @@ import { createNotification } from "../utils/createNotification.js";
 
 const listingRepo = () => AppDataSource.getRepository(Listing);
 
-// Yangi e'lon qo'yish (login bo'lgan foydalanuvchi uchun)
-// req.body Joi orqali allaqachon tekshirilgan (validate middleware)
 export async function createListing(req, res) {
   try {
     const canPost = await checkCanPostListing(req.userId);
@@ -27,6 +25,11 @@ export async function createListing(req, res) {
       currency,
       listedBy,
       commissionPercent,
+      suitableFor,
+      childrenAllowed,
+      studentGender,
+      maxStudents,
+      petsAllowed,
       description,
     } = req.body;
 
@@ -45,6 +48,14 @@ export async function createListing(req, res) {
       currency: currency || "som",
       listedBy: listedBy || "owner",
       commissionPercent: listedBy === "agent" ? commissionPercent : null,
+      suitableFor,
+      // Faqat tegishli tanlovga oid maydonlarni saqlaymiz, qolganini
+      // "mavjud emas" (null) qilib qo'yamiz — noto'g'ri kombinatsiya
+      // bazaga yozilib qolmasligi uchun
+      childrenAllowed: suitableFor === "oila" ? childrenAllowed : null,
+      studentGender: suitableFor === "talaba" ? studentGender : null,
+      maxStudents: suitableFor === "talaba" ? maxStudents : null,
+      petsAllowed: petsAllowed === undefined ? null : petsAllowed,
       description: description || null,
       status: "active",
     });
@@ -57,8 +68,6 @@ export async function createListing(req, res) {
   }
 }
 
-// Bosh sahifa / qidiruv / filter uchun umumiy ro'yxat olish
-// req.query Joi orqali allaqachon tekshirilgan va default qiymatlar bilan to'ldirilgan
 export async function getListings(req, res) {
   try {
     const {
@@ -71,6 +80,11 @@ export async function getListings(req, res) {
       minPrice,
       maxPrice,
       roomCount,
+      minRoomCount,
+      suitableFor,
+      childrenAllowed,
+      studentGender,
+      petsAllowed,
       page,
       limit,
     } = req.query;
@@ -81,45 +95,33 @@ export async function getListings(req, res) {
       .leftJoinAndSelect("listing.owner", "owner")
       .where("listing.status = :status", { status: "active" });
 
-    // Manzil bo'yicha qidiruv - masalan "3 kichik daha"
-    if (address) {
-      qb.andWhere("listing.address ILIKE :address", { address: `%${address}%` });
-    }
-
-    if (renovationType) {
-      qb.andWhere("listing.renovationType = :renovationType", { renovationType });
-    }
-
+    if (address) qb.andWhere("listing.address ILIKE :address", { address: `%${address}%` });
+    if (renovationType) qb.andWhere("listing.renovationType = :renovationType", { renovationType });
     if (hasGas === "true") qb.andWhere("listing.hasGas = true");
     if (hasWater === "true") qb.andWhere("listing.hasWater = true");
     if (hasElectricity === "true") qb.andWhere("listing.hasElectricity = true");
     if (hasFurniture === "true") qb.andWhere("listing.hasFurniture = true");
-    // Eslatma: frontend'dagi "Barcha sharoit bor" filteri hasGas=true,
-    // hasWater=true, hasElectricity=true'ni birgalikda yuboradi —
-    // bu yerda alohida maxsus holat kerak emas.
 
-    if (roomCount) {
+    // "5+" kabi minimal chegara — aniq songa ustunlik beradi
+    if (minRoomCount) {
+      qb.andWhere("listing.roomCount >= :minRoomCount", { minRoomCount });
+    } else if (roomCount) {
       qb.andWhere("listing.roomCount = :roomCount", { roomCount });
     }
 
-    if (minPrice !== undefined) {
-      qb.andWhere("listing.price >= :minPrice", { minPrice });
-    }
-    if (maxPrice !== undefined) {
-      qb.andWhere("listing.price <= :maxPrice", { maxPrice });
-    }
+    if (minPrice !== undefined) qb.andWhere("listing.price >= :minPrice", { minPrice });
+    if (maxPrice !== undefined) qb.andWhere("listing.price <= :maxPrice", { maxPrice });
+
+    if (suitableFor) qb.andWhere("listing.suitableFor = :suitableFor", { suitableFor });
+    if (childrenAllowed === "true") qb.andWhere("listing.childrenAllowed = true");
+    if (studentGender) qb.andWhere("listing.studentGender = :studentGender", { studentGender });
+    if (petsAllowed === "true") qb.andWhere("listing.petsAllowed = true");
 
     qb.orderBy("listing.createdAt", "DESC");
     qb.skip((page - 1) * limit).take(limit);
 
     const [listings, total] = await qb.getManyAndCount();
-
-    return res.json({
-      listings,
-      total,
-      page,
-      totalPages: Math.ceil(total / limit),
-    });
+    return res.json({ listings, total, page, totalPages: Math.ceil(total / limit) });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Serverda xatolik yuz berdi" });
@@ -129,15 +131,8 @@ export async function getListings(req, res) {
 export async function getListingById(req, res) {
   try {
     const repo = listingRepo();
-    const listing = await repo.findOne({
-      where: { id: req.params.id },
-      relations: ["owner"],
-    });
-
-    if (!listing) {
-      return res.status(404).json({ message: "E'lon topilmadi" });
-    }
-
+    const listing = await repo.findOne({ where: { id: req.params.id }, relations: ["owner"] });
+    if (!listing) return res.status(404).json({ message: "E'lon topilmadi" });
     return res.json({ listing });
   } catch (err) {
     console.error(err);
@@ -145,7 +140,6 @@ export async function getListingById(req, res) {
   }
 }
 
-// Faqat o'zining e'lonlari (profil / dashboard uchun)
 export async function getMyListings(req, res) {
   try {
     const repo = listingRepo();
@@ -164,10 +158,7 @@ export async function updateListing(req, res) {
   try {
     const repo = listingRepo();
     const listing = await repo.findOne({ where: { id: req.params.id } });
-
-    if (!listing) {
-      return res.status(404).json({ message: "E'lon topilmadi" });
-    }
+    if (!listing) return res.status(404).json({ message: "E'lon topilmadi" });
     if (listing.ownerId !== req.userId) {
       return res.status(403).json({ message: "Bu e'lonni tahrirlash huquqingiz yo'q" });
     }
@@ -195,14 +186,10 @@ export async function deleteListing(req, res) {
   try {
     const repo = listingRepo();
     const listing = await repo.findOne({ where: { id: req.params.id } });
-
-    if (!listing) {
-      return res.status(404).json({ message: "E'lon topilmadi" });
-    }
+    if (!listing) return res.status(404).json({ message: "E'lon topilmadi" });
     if (listing.ownerId !== req.userId) {
       return res.status(403).json({ message: "Bu e'lonni o'chirish huquqingiz yo'q" });
     }
-
     await repo.remove(listing);
     return res.json({ message: "E'lon o'chirildi" });
   } catch (err) {

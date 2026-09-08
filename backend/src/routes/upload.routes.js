@@ -1,33 +1,17 @@
 import { Router } from "express";
 import multer from "multer";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
 import { requireAuth } from "../middleware/auth.middleware.js";
+import cloudinary from "../utils/cloudinary.js";
 
-// ES modules'da __dirname mavjud emas, shuning uchun import.meta.url orqali quramiz
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const uploadDir = path.join(__dirname, "..", "..", "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename: (_req, file, cb) => {
-    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
-  },
-});
-
+// Fayllarni diskka yozish o'rniga xotirada (RAM) saqlaymiz, keyin
+// to'g'ridan-to'g'ri Cloudinary'ga oqim (stream) sifatida yuboramiz —
+// Railway'ning diski har deploy'da tozalanib ketishining oldini oladi
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (_req, file, cb) => {
     const allowed = /jpeg|jpg|png|webp/;
-    const ok = allowed.test(path.extname(file.originalname).toLowerCase());
+    const ok = allowed.test(file.mimetype);
     if (ok) {
       cb(null, true);
     } else {
@@ -36,13 +20,30 @@ const upload = multer({
   },
 });
 
+function uploadBufferToCloudinary(buffer) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "ijaraly/listings", resource_type: "image" },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result.secure_url);
+      }
+    );
+    stream.end(buffer);
+  });
+}
+
 const router = Router();
 
-// Bir nechta rasm yuklash (masalan e'lon uchun uy rasmlari)
-router.post("/", requireAuth, upload.array("images", 10), (req, res) => {
-  const files = req.files;
-  const urls = files.map((f) => `/uploads/${f.filename}`);
-  res.status(201).json({ urls });
+router.post("/", requireAuth, upload.array("images", 10), async (req, res) => {
+  try {
+    const files = req.files;
+    const urls = await Promise.all(files.map((f) => uploadBufferToCloudinary(f.buffer)));
+    res.status(201).json({ urls });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Rasm yuklashda xatolik yuz berdi" });
+  }
 });
 
 export default router;

@@ -21,17 +21,19 @@ export default function NewListing() {
     currency: "som",
     listedBy: "owner",
     commissionPercent: "",
+    suitableFor: "",
+    childrenAllowed: null,
+    studentGender: "",
+    maxStudents: "",
+    petsAllowed: null,
     description: "",
   });
 
-  // Har bir rasm { file, previewUrl } shaklida saqlanadi,
-  // shunda alohida rasmni topib o'chirish oson bo'ladi
   const [images, setImages] = useState([]);
   const [imageError, setImageError] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Login qilinmagan foydalanuvchini kirish sahifasiga yo'naltiramiz
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/login");
@@ -43,44 +45,47 @@ export default function NewListing() {
     setForm({ ...form, [name]: type === "checkbox" ? checked : value });
   }
 
-  // Faqat musbat butun songa ruxsat beradi — "-", "+", "e", "." kabi
-  // belgilarni tugma bosilgan zahoti bloklaydi (raqamli input'da ular
-  // brauzer tomonidan yozishga ruxsat berilgan, lekin bizga kerak emas)
   function handleIntegerKeyDown(e) {
     if (["-", "+", "e", "E", "."].includes(e.key)) {
       e.preventDefault();
     }
   }
 
-  // Agar foydalanuvchi qiymatni joylashtirsa (paste) yoki boshqa yo'l bilan
-  // manfiy/o'nlik son kirsa, bu yerda yakuniy tozalash amalga oshadi
   function handleRoomCountChange(e) {
-    const cleaned = e.target.value.replace(/[^0-9]/g, "");
-    setForm({ ...form, roomCount: cleaned });
+    setForm({ ...form, roomCount: e.target.value.replace(/[^0-9]/g, "") });
   }
 
   function handlePriceChange(e) {
-    const cleaned = e.target.value.replace(/[^0-9]/g, "");
-    setForm({ ...form, price: cleaned });
+    setForm({ ...form, price: e.target.value.replace(/[^0-9]/g, "") });
+  }
+
+  function handleMaxStudentsChange(e) {
+    setForm({ ...form, maxStudents: e.target.value.replace(/[^0-9]/g, "") });
+  }
+
+  function handleSuitableForChange(value) {
+    setForm({
+      ...form,
+      suitableFor: value,
+      childrenAllowed: null,
+      studentGender: "",
+      maxStudents: "",
+    });
   }
 
   function handleFilesChange(e) {
     const selected = Array.from(e.target.files);
     const availableSlots = MAX_IMAGES - images.length;
-
     if (selected.length > availableSlots) {
       setImageError(`Ko'pi bilan ${MAX_IMAGES} ta rasm yuklash mumkin`);
     } else {
       setImageError("");
     }
-
     const toAdd = selected.slice(0, availableSlots).map((file) => ({
       file,
       previewUrl: URL.createObjectURL(file),
     }));
-
     setImages((prev) => [...prev, ...toAdd]);
-    // Input'ni tozalaymiz, shunda xohlasa xuddi shu faylni qayta tanlashi mumkin
     e.target.value = "";
   }
 
@@ -100,16 +105,22 @@ export default function NewListing() {
       setError("Honalar soni kamida 1 bo'lishi kerak");
       return;
     }
-
-    if (form.listedBy === "agent" && !form.commissionPercent) {
-      setError("Vositachi uchun komissiya foizini kiriting");
+    if (!form.suitableFor) {
+      setError("Uy kimlar uchun ekanini tanlang");
+      return;
+    }
+    if (form.suitableFor === "oila" && form.childrenAllowed === null) {
+      setError("Yosh bolali oilalarga ruxsat borligini belgilang");
+      return;
+    }
+    if (form.suitableFor === "talaba" && (!form.studentGender || !form.maxStudents)) {
+      setError("Talabalar uchun jinsi va maksimal sonini kiriting");
       return;
     }
 
     setSubmitting(true);
 
     try {
-      // 1-qadam: rasmlar tanlangan bo'lsa, avval ularni yuklaymiz
       let imageUrls = [];
       if (images.length > 0) {
         const formData = new FormData();
@@ -120,13 +131,19 @@ export default function NewListing() {
         imageUrls = uploadRes.data.urls;
       }
 
-      // 2-qadam: e'lonni rasm URL'lari bilan birga yaratamiz
+      // DIQQAT: "suitableFor"ga tegishli bo'lmagan har bir maydonni bu yerda
+      // ANIQ "null" qilib yuboramiz — bo'sh satr ("") emas. Bu xatoning oldini
+      // olish uchun eng ishonchli yo'l, chunki backend ham endi buni qo'shimcha
+      // qabul qiladi, lekin frontend'ning o'zi ham toza ma'lumot yuborishi kerak.
       await api.post("/listings", {
         ...form,
         roomCount: Number(form.roomCount),
         price: Number(form.price),
         commissionPercent:
           form.listedBy === "agent" ? Number(form.commissionPercent) : null,
+        childrenAllowed: form.suitableFor === "oila" ? form.childrenAllowed : null,
+        studentGender: form.suitableFor === "talaba" ? form.studentGender : null,
+        maxStudents: form.suitableFor === "talaba" ? Number(form.maxStudents) : null,
         images: imageUrls,
       });
 
@@ -159,7 +176,6 @@ export default function NewListing() {
           <label className="mb-1 block text-sm text-ink">
             Rasmlar <span className="text-muted-2">(ko'pi bilan {MAX_IMAGES} ta)</span>
           </label>
-
           {images.length < MAX_IMAGES && (
             <input
               type="file"
@@ -169,11 +185,7 @@ export default function NewListing() {
               className="block w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-ink-700 file:px-3 file:py-2 file:text-sm file:font-medium file:text-paper-100"
             />
           )}
-
-          {imageError && (
-            <p className="mt-1 text-xs text-red-600">{imageError}</p>
-          )}
-
+          {imageError && <p className="mt-1 text-xs text-red-600">{imageError}</p>}
           {images.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-2">
               {images.map((img, i) => (
@@ -218,10 +230,11 @@ export default function NewListing() {
             {["oddiy", "yevro"].map((type) => (
               <label
                 key={type}
-                className={`flex-1 cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm capitalize ${form.renovationType === type
+                className={`flex-1 cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm capitalize ${
+                  form.renovationType === type
                     ? "border-ink-700 bg-ink-700 text-paper-100"
                     : "border-line bg-white text-ink"
-                  }`}
+                }`}
               >
                 <input
                   type="radio"
@@ -247,10 +260,11 @@ export default function NewListing() {
             ].map((opt) => (
               <label
                 key={opt.value}
-                className={`flex-1 cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm ${form.listedBy === opt.value
+                className={`flex-1 cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm ${
+                  form.listedBy === opt.value
                     ? "border-ink-700 bg-ink-700 text-paper-100"
                     : "border-line bg-white text-ink"
-                  }`}
+                }`}
               >
                 <input
                   type="radio"
@@ -264,13 +278,9 @@ export default function NewListing() {
               </label>
             ))}
           </div>
-
-          {/* Faqat vositachi tanlanganda ko'rinadi — shaffoflik uchun majburiy */}
           {form.listedBy === "agent" && (
             <div className="mt-3">
-              <label className="mb-1 block text-sm text-ink">
-                Komissiya foizi (%)
-              </label>
+              <label className="mb-1 block text-sm text-ink">Komissiya foizi (%)</label>
               <input
                 type="text"
                 name="commissionPercent"
@@ -287,11 +297,156 @@ export default function NewListing() {
                 placeholder="masalan 30"
                 className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
               />
-              <p className="mt-1 text-xs text-muted-2">
-                Bu foiz ijarachiga e'lon sahifasida aniq ko'rsatiladi
-              </p>
             </div>
           )}
+        </div>
+
+        {/* Ijara shartlari — kimlarga mos */}
+        <div className="rounded-lg border border-line bg-paper-200 p-4">
+          <label className="mb-1 block text-sm font-medium text-ink">
+            Uy kimlar uchun <span className="text-red-600">*</span>
+          </label>
+          <p className="mb-2 text-xs text-muted-2">
+            Bu shartlar qidiruvda ko'rsatiladi — ijarachi qo'ng'iroq qilishdan oldin biladi
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { value: "oila", label: "Oila" },
+              { value: "talaba", label: "Talaba" },
+              { value: "farqi_yoq", label: "Farqi yo'q" },
+            ].map((opt) => (
+              <label
+                key={opt.value}
+                className={`cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm ${
+                  form.suitableFor === opt.value
+                    ? "border-ink-700 bg-ink-700 text-paper-100"
+                    : "border-line bg-white text-ink"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="suitableFor"
+                  value={opt.value}
+                  checked={form.suitableFor === opt.value}
+                  onChange={() => handleSuitableForChange(opt.value)}
+                  className="hidden"
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+
+          {form.suitableFor === "oila" && (
+            <div className="mt-3">
+              <label className="mb-1 block text-sm text-ink">
+                Yosh bolali oilalarga ruxsatmi?
+              </label>
+              <div className="flex gap-3">
+                {[
+                  { value: true, label: "Ha" },
+                  { value: false, label: "Yo'q" },
+                ].map((opt) => (
+                  <label
+                    key={String(opt.value)}
+                    className={`flex-1 cursor-pointer rounded-lg border px-3 py-2 text-center text-sm ${
+                      form.childrenAllowed === opt.value
+                        ? "border-ink-700 bg-ink-700 text-paper-100"
+                        : "border-line bg-white text-ink"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="childrenAllowed"
+                      checked={form.childrenAllowed === opt.value}
+                      onChange={() => setForm({ ...form, childrenAllowed: opt.value })}
+                      className="hidden"
+                    />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {form.suitableFor === "talaba" && (
+            <div className="mt-3 space-y-3">
+              <div>
+                <label className="mb-1 block text-sm text-ink">Jinsi</label>
+                <div className="flex gap-2">
+                  {[
+                    { value: "ogil", label: "O'g'il bola" },
+                    { value: "qiz", label: "Qiz bola" },
+                    { value: "farqi_yoq", label: "Farqi yo'q" },
+                  ].map((opt) => (
+                    <label
+                      key={opt.value}
+                      className={`flex-1 cursor-pointer rounded-lg border px-2 py-2 text-center text-xs ${
+                        form.studentGender === opt.value
+                          ? "border-ink-700 bg-ink-700 text-paper-100"
+                          : "border-line bg-white text-ink"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="studentGender"
+                        value={opt.value}
+                        checked={form.studentGender === opt.value}
+                        onChange={handleChange}
+                        className="hidden"
+                      />
+                      {opt.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-ink">
+                  Nechta talabagacha mumkin
+                </label>
+                <input
+                  type="text"
+                  value={form.maxStudents}
+                  onChange={handleMaxStudentsChange}
+                  onKeyDown={handleIntegerKeyDown}
+                  inputMode="numeric"
+                  placeholder="masalan 2"
+                  className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="mt-3">
+            <label className="mb-1 block text-sm text-ink">
+              Uy hayvoni bilan yashash mumkinmi?{" "}
+              <span className="text-muted-2">(ixtiyoriy)</span>
+            </label>
+            <div className="flex gap-2">
+              {[
+                { value: null, label: "Belgilanmagan" },
+                { value: true, label: "Ha, mumkin" },
+                { value: false, label: "Yo'q" },
+              ].map((opt) => (
+                <label
+                  key={String(opt.value)}
+                  className={`flex-1 cursor-pointer rounded-lg border px-2 py-2 text-center text-xs ${
+                    form.petsAllowed === opt.value
+                      ? "border-ink-700 bg-ink-700 text-paper-100"
+                      : "border-line bg-white text-ink"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="petsAllowed"
+                    checked={form.petsAllowed === opt.value}
+                    onChange={() => setForm({ ...form, petsAllowed: opt.value })}
+                    className="hidden"
+                  />
+                  {opt.label}
+                </label>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Sharoit va jihoz */}
@@ -327,7 +482,6 @@ export default function NewListing() {
             <label className="mb-1 block text-sm text-ink">Honalar soni</label>
             <input
               type="text"
-              name="roomCount"
               value={form.roomCount}
               onChange={handleRoomCountChange}
               onKeyDown={handleIntegerKeyDown}
@@ -342,7 +496,6 @@ export default function NewListing() {
             <div className="flex gap-1.5">
               <input
                 type="text"
-                name="price"
                 value={form.price}
                 onChange={handlePriceChange}
                 onKeyDown={handleIntegerKeyDown}
@@ -360,10 +513,11 @@ export default function NewListing() {
                     key={opt.value}
                     type="button"
                     onClick={() => setForm({ ...form, currency: opt.value })}
-                    className={`px-3 text-sm ${form.currency === opt.value
+                    className={`px-3 text-sm ${
+                      form.currency === opt.value
                         ? "bg-ink-700 text-paper-100"
                         : "bg-white text-muted"
-                      }`}
+                    }`}
                   >
                     {opt.label}
                   </button>
@@ -376,22 +530,20 @@ export default function NewListing() {
         {/* Qo'shimcha ma'lumot */}
         <div>
           <label className="mb-1 block text-sm text-ink">
-            Uy xaqida qisqacha ma'lumot <span className="text-muted-2">(majburiy)</span>
+            Qo'shimcha ma'lumot <span className="text-muted-2">(ixtiyoriy)</span>
           </label>
           <textarea
             name="description"
             value={form.description}
             onChange={handleChange}
             rows={4}
-            placeholder="Maktabga, bog'chaga yaqin, Keng va yorqin xonalar ..."
+            placeholder="Metro yaqin, yorug' xonalar..."
             className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
           />
         </div>
 
         {error && (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </p>
+          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
         )}
 
         <button

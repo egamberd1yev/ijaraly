@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/client";
+import logoIcon from "../assets/ijaraly-icon.png";
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -28,18 +29,7 @@ export default function Header() {
     <header className="bg-ink-900 px-6 py-4">
       <div className="mx-auto flex max-w-6xl items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <svg width="26" height="26" viewBox="0 0 26 26">
-            <path
-              d="M13 2 L24 12 L24 24 L2 24 L2 12 Z"
-              fill="none"
-              stroke="var(--color-gold-500)"
-              strokeWidth="1.6"
-            />
-            <path
-              d="M13 8 C9 8 8 12 8 15 L8 24 L18 24 L18 15 C18 12 17 8 13 8 Z"
-              fill="var(--color-gold-500)"
-            />
-          </svg>
+          <img src={logoIcon} alt="Ijaraly" className="h-8 w-auto" />
           <span className="font-display text-xl font-medium text-paper-100 tracking-wide">
             Ijaraly
           </span>
