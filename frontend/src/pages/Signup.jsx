@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext";
@@ -16,6 +16,12 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // React state yangilanishi asinxron bo'lgani uchun, "disabled={loading}"
+  // ba'zida ikkinchi bosishning oldini olishga ulgurmasligi mumkin (masalan
+  // tez-tez ikki marta bosilganda). Ref esa darhol, sinxron tekshiriladi —
+  // shu orqali bir xil so'rov ikki marta yuborilishining oldini olamiz.
+  const submittingRef = useRef(false);
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -25,10 +31,15 @@ export default function Signup() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+
     setError("");
 
     if (!agreeToTerms) {
       setError("Davom etish uchun shartlar va qoidalarga rozilik bildirishingiz kerak");
+      submittingRef.current = false;
       return;
     }
 
@@ -46,6 +57,7 @@ export default function Signup() {
       setError(message);
     } finally {
       setLoading(false);
+      submittingRef.current = false;
     }
   }
 

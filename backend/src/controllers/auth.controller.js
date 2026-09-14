@@ -11,13 +11,26 @@ function generateToken(userId) {
   return jwt.sign({ userId }, secret, { expiresIn });
 }
 
-// Parolni javobdan chiqarib tashlash uchun yordamchi funksiya
 function toPublicUser(user) {
   const { passwordHash, ...publicUser } = user;
   return publicUser;
 }
 
-// req.body Joi orqali allaqachon tekshirilgan (validate middleware)
+// Postgres'ning "unique constraint" xatosi (kod 23505) — masalan bir xil
+// email yoki telefon deyarli bir vaqtda ikki marta yuborilganda yuzaga
+// keladi. Buni ushlab, tushunarli xabar bilan 409 qaytaramiz — aks holda
+// bu ushlanmagan xato sifatida 500'ga aylanib qolar edi.
+function isDuplicateKeyError(err) {
+  return err?.code === "23505";
+}
+
+function duplicateKeyMessage(err) {
+  if (err.detail?.includes("phone")) {
+    return "Bu telefon raqami bilan foydalanuvchi allaqachon mavjud";
+  }
+  return "Bu email bilan foydalanuvchi allaqachon mavjud";
+}
+
 export async function signup(req, res) {
   try {
     const { fullName, email, phone, password } = req.body;
@@ -44,6 +57,9 @@ export async function signup(req, res) {
     const token = generateToken(user.id);
     return res.status(201).json({ user: toPublicUser(user), token });
   } catch (err) {
+    if (isDuplicateKeyError(err)) {
+      return res.status(409).json({ message: duplicateKeyMessage(err) });
+    }
     console.error(err);
     return res.status(500).json({ message: "Serverda xatolik yuz berdi" });
   }
@@ -65,9 +81,7 @@ export async function login(req, res) {
     }
 
     if (user.accountStatus === "blocked") {
-      return res.status(403).json({
-        message: "Akkauntingiz qoidabuzarliklar sababli bloklangan",
-      });
+      return res.status(403).json({ message: "Akkauntingiz qoidabuzarliklar sababli bloklangan" });
     }
 
     const token = generateToken(user.id);
@@ -92,7 +106,6 @@ export async function getMe(req, res) {
   }
 }
 
-// Profilni tahrirlash - ism, telefon, ijtimoiy tarmoq linklari
 export async function updateProfile(req, res) {
   try {
     const repo = userRepo();
@@ -113,6 +126,9 @@ export async function updateProfile(req, res) {
     await repo.save(user);
     return res.json({ user: toPublicUser(user) });
   } catch (err) {
+    if (isDuplicateKeyError(err)) {
+      return res.status(409).json({ message: duplicateKeyMessage(err) });
+    }
     console.error(err);
     return res.status(500).json({ message: "Serverda xatolik yuz berdi" });
   }
