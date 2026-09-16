@@ -1,11 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useRegion } from "../context/RegionContext";
 import api from "../api/client";
 import logoIcon from "../assets/ijaraly-icon.png";
+import RegionSelector from "./RegionSelector";
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const { selectedRegion } = useRegion();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -43,6 +46,7 @@ export default function Header() {
 
         {/* Desktop navigatsiya — md va undan katta ekranlarda ko'rinadi */}
         <nav className="hidden items-center gap-5 md:flex">
+          <RegionSelector />
           {user ? (
             <>
               <Link to="/listings/new" className="text-sm text-[#CFE3DD] hover:text-paper-100">
@@ -91,6 +95,7 @@ export default function Header() {
 
         {/* Mobil/planshet: qo'ng'iroq (agar login bo'lsa) + hamburger tugmasi */}
         <div className="flex items-center gap-3 md:hidden">
+          <RegionSelector />
           {user && (
             <Link to="/notifications" title="Bildirishnomalar" className="relative text-[#CFE3DD]">
               <BellIcon />

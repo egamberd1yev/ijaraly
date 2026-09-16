@@ -14,6 +14,7 @@ export async function createListing(req, res) {
 
     const {
       images,
+      regionId,
       address,
       renovationType,
       hasGas,
@@ -37,6 +38,7 @@ export async function createListing(req, res) {
     const listing = repo.create({
       ownerId: req.userId,
       images: images || [],
+      regionId: regionId || null,
       address,
       renovationType: renovationType || "oddiy",
       hasGas: !!hasGas,
@@ -71,6 +73,7 @@ export async function createListing(req, res) {
 export async function getListings(req, res) {
   try {
     const {
+      regionId,
       address,
       renovationType,
       hasGas,
@@ -95,6 +98,7 @@ export async function getListings(req, res) {
       .leftJoinAndSelect("listing.owner", "owner")
       .where("listing.status = :status", { status: "active" });
 
+    if (regionId) qb.andWhere("listing.regionId = :regionId", { regionId });
     if (address) qb.andWhere("listing.address ILIKE :address", { address: `%${address}%` });
     if (renovationType) qb.andWhere("listing.renovationType = :renovationType", { renovationType });
     if (hasGas === "true") qb.andWhere("listing.hasGas = true");

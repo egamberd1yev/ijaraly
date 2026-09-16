@@ -58,6 +58,7 @@ export const updateProfileSchema = Joi.object({
 
 export const createListingSchema = Joi.object({
   images: Joi.array().items(Joi.string()).default([]),
+  regionId: Joi.string().allow(null, ""),
   address: Joi.string().min(3).max(255).required().messages({
     "string.empty": "Manzil kiritilishi shart",
     "string.min": "Manzil juda qisqa",
@@ -146,6 +147,7 @@ export const createListingSchema = Joi.object({
 
 export const updateListingSchema = Joi.object({
   images: Joi.array().items(Joi.string()),
+  regionId: Joi.string().allow(null, ""),
   address: Joi.string().min(3).max(255),
   renovationType: Joi.string().valid(...RENOVATION_TYPES),
   hasGas: Joi.boolean(),
@@ -170,6 +172,7 @@ export const updateListingSchema = Joi.object({
 });
 
 export const listingQuerySchema = Joi.object({
+  regionId: Joi.string().allow(null, ""),
   address: Joi.string().allow(""),
   renovationType: Joi.string().valid(...RENOVATION_TYPES),
   hasGas: Joi.string().valid("true", "false"),

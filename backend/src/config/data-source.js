@@ -7,10 +7,11 @@ import { Contract } from "../entities/Contract.js";
 import { Report } from "../entities/Report.js";
 import { Comment } from "../entities/Comment.js";
 import { Notification } from "../entities/Notification.js";
+import { Region } from "../entities/Region.js";
 
 dotenv.config();
 
-const entities = [User, Listing, Contract, Report, Comment, Notification];
+const entities = [User, Listing, Contract, Report, Comment, Notification, Region];
 
 // Railway (va ko'pchilik hosting xizmatlari) bitta DATABASE_URL beradi,
 // lokal kompyuterda esa odatda alohida DB_HOST/DB_USER va h.k. ishlatiladi.

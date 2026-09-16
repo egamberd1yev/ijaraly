@@ -9,6 +9,7 @@ import uploadRoutes from "./routes/upload.routes.js";
 import contractRoutes from "./routes/contract.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import regionRoutes from "./routes/region.routes.js";
 import { startExpirationJob } from "./jobs/expireListings.js";
 
 dotenv.config();
@@ -36,6 +37,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api", contractRoutes);
 app.use("/api", userRoutes);
 app.use("/api", notificationRoutes);
+app.use("/api/regions", regionRoutes);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", message: "Server ishlayapti" });

@@ -13,6 +13,9 @@ export const Listing = new EntitySchema({
     ownerId: { type: "uuid" },
     // Rasmlar - bir nechta rasm URL manzillari (multer orqali yuklangan)
     images: { type: "text", array: true, default: [] },
+    // Viloyat/region tanlovi (regionId orqali regions jadvaliga bog'liq)
+    regionId: { type: "varchar", length: 50, nullable: true },
+
     // Manzil - oddiy matn, masalan "Toshkent, Chilonzor, 3 kichik daha"
     address: { type: "varchar", length: 255 },
     renovationType: { type: "enum", enum: RENOVATION_TYPES, default: "oddiy" },
@@ -52,6 +55,5 @@ export const Listing = new EntitySchema({
       joinColumn: { name: "ownerId" },
       onDelete: "CASCADE",
     },
-  },
-  indices: [{ columns: ["address"] }],
+  },    indices: [{ columns: ["address"] }, { columns: ["regionId"] }],
 });

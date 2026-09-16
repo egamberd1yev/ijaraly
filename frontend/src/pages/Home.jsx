@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { useRegion } from "../context/RegionContext";
 import api from "../api/client";
 import { getImageUrl } from "../api/getImageUrl";
 import { formatPrice } from "../utils/format";
@@ -8,6 +9,7 @@ const ROOM_OPTIONS = [1, 2, 3, 4];
 const PAGE_LIMIT = 12;
 
 export default function Home() {
+  const { selectedRegion } = useRegion();
   const [addressInput, setAddressInput] = useState("");
   const [appliedAddress, setAppliedAddress] = useState("");
 
@@ -32,6 +34,7 @@ export default function Home() {
   const buildParams = useCallback(
     (pageNum) => {
       const params = { page: pageNum, limit: PAGE_LIMIT };
+      if (selectedRegion) params.regionId = selectedRegion;
       if (appliedAddress) params.address = appliedAddress;
       if (renovationType) params.renovationType = renovationType;
       if (allUtilities) {
