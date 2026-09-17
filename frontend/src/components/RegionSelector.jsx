@@ -37,7 +37,7 @@ export default function RegionSelector() {
           />
           <circle cx="12" cy="10" r="2.5" stroke="currentColor" strokeWidth="2" />
         </svg>
-        <span className="truncate max-w-[140px]">{getDisplayLabel(selectedRegion)}</span>
+        <span className="truncate max-w-140px">{getDisplayLabel(selectedRegion)}</span>
         <svg
           width="12"
           height="12"
