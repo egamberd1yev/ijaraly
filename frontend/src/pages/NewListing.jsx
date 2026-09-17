@@ -2,14 +2,17 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useRegion } from "../context/RegionContext";
 
 const MAX_IMAGES = 4;
 
 export default function NewListing() {
   const { user, loading: authLoading } = useAuth();
+  const { regions, loading: regionsLoading } = useRegion();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
+    regionId: "",
     address: "",
     renovationType: "oddiy",
     hasGas: false,
@@ -103,6 +106,10 @@ export default function NewListing() {
 
     if (!form.roomCount || Number(form.roomCount) < 1) {
       setError("Honalar soni kamida 1 bo'lishi kerak");
+      return;
+    }
+    if (!form.regionId) {
+      setError("Viloyatni tanlang");
       return;
     }
     if (!form.suitableFor) {
@@ -298,6 +305,31 @@ export default function NewListing() {
                 className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
               />
             </div>
+          )}
+        </div>
+
+        {/* Viloyat */}
+        <div>
+          <label className="mb-1 block text-sm text-ink">
+            Viloyat <span className="text-red-600">*</span>
+          </label>
+          {regionsLoading ? (
+            <p className="mt-1 text-sm text-muted">Yuklanmoqda...</p>
+          ) : (
+            <select
+              name="regionId"
+              value={form.regionId || ""}
+              onChange={handleChange}
+              required
+              className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none focus:border-ink-700"
+            >
+              <option value="">Viloyatni tanlang</option>
+              {regions.map((region) => (
+                <option key={region.id} value={region.id}>
+                  {region.name}
+                </option>
+              ))}
+            </select>
           )}
         </div>
 

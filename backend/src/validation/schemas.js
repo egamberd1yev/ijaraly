@@ -58,7 +58,10 @@ export const updateProfileSchema = Joi.object({
 
 export const createListingSchema = Joi.object({
   images: Joi.array().items(Joi.string()).default([]),
-  regionId: Joi.string().allow(null, ""),
+  regionId: Joi.string().required().messages({
+    "any.required": "Viloyatni tanlingiz shart",
+    "string.empty": "Viloyatni tanlang",
+  }),
   address: Joi.string().min(3).max(255).required().messages({
     "string.empty": "Manzil kiritilishi shart",
     "string.min": "Manzil juda qisqa",
