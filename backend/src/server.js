@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { AppDataSource } from "./config/data-source.js";
+import { Region } from "./entities/Region.js";
 import authRoutes from "./routes/auth.routes.js";
 import listingRoutes from "./routes/listing.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
@@ -11,6 +12,7 @@ import userRoutes from "./routes/user.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import regionRoutes from "./routes/region.routes.js";
 import { startExpirationJob } from "./jobs/expireListings.js";
+import { REGIONS } from "./entities/Region.js";
 
 dotenv.config();
 
@@ -44,8 +46,19 @@ app.get("/api/health", (_req, res) => {
 });
 
 AppDataSource.initialize()
-  .then(() => {
+  .then(async () => {
     console.log("✅ Ma'lumotlar bazasiga ulanish muvaffaqiyatli");
+
+    // Viloyatlar ro'yxatini seeding qilish (agar bo'sh bo'lsa)
+    const regionRepo = AppDataSource.getRepository(Region);
+    const existing = await regionRepo.count();
+    if (existing === 0) {
+      await regionRepo.save(REGIONS);
+      console.log(`✅ Viloyatlar ro'yxati seeding qilindi (${REGIONS.length} ta)`);
+    } else {
+      console.log(`ℹ Viloyatlar bazada mavjud (${existing} ta), seeding o'tkazilmadi`);
+    }
+
     startExpirationJob();
     app.listen(PORT, () => {
       console.log(`🚀 Server ${PORT}-portda ishlamoqda`);
