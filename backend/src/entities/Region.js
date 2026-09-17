@@ -14,7 +14,7 @@ export const REGIONS = [
   { id: "bukhara", name: "Buxoro viloyati", type: "viloyat" },
   { id: "khorezm", name: "Xorazm viloyati", type: "viloyat" },
   { id: "qashqadaryo", name: "Qashqadaryo viloyati", type: "viloyat" },
-  { id: "karakalpakstan", name: "Qoraqalpog'iston JKN", type: "respublika" },
+  { id: "karakalpakstan", name: "Qoraqalpog'iston", type: "respublika" },
   { id: "samarkand", name: "Samarqand viloyati", type: "viloyat" },
   { id: "navoiy", name: "Navoiy viloyati", type: "viloyat" },
   { id: "andijon", name: "Andijon viloyati", type: "viloyat" },
