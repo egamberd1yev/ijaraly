@@ -44,6 +44,14 @@ export default function ListingDetail() {
     }
   }
 
+  async function handleCreateContract(payload) {
+    const res = await api.post(`/listings/${id}/contract`, payload);
+    const contract = res.data?.contract;
+    if (!contract || !contract.pdfUrl) throw new Error("Shartnoma yaratilmadi");
+    setCreatedContractUrl(contract.pdfUrl);
+    setShowContractModal(false);
+  }
+
   if (loading) return <p className="py-16 text-center text-muted">Yuklanmoqda...</p>;
 
   if (error || !listing) {
@@ -227,17 +235,13 @@ export default function ListingDetail() {
             </div>
           )}
         </div>
-      </div>
+      </div>        <ContractModal
+          open={showContractModal}
+          listing={listing}
+          onClose={() => setShowContractModal(false)}
+          onSubmit={handleCreateContract}
+        />
 
-      <ContractModal
-        open={showContractModal}
-        listingId={listing.id}
-        onClose={() => setShowContractModal(false)}
-        onCreated={(contract) => {
-          setCreatedContractUrl(contract.pdfUrl);
-          setShowContractModal(false);
-        }}
-      />
     </div>
   );
 }
