@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -13,6 +13,11 @@ import UserSearch from "./pages/UserSearch";
 import PublicProfile from "./pages/PublicProfile";
 import Notifications from "./pages/Notifications";
 
+function RegionRedirect() {
+  const { regionId } = useParams();
+  return <Navigate to={`/?regionId=${encodeURIComponent(regionId)}`} replace />;
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -24,12 +29,14 @@ export default function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/listings/new" element={<NewListing />} />
             <Route path="/listings/:id" element={<ListingDetail />} />
+            <Route path="/regions/:regionId" element={<RegionRedirect />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/contracts" element={<Contracts />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/users/search" element={<UserSearch />} />
             <Route path="/users/:id" element={<PublicProfile />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
       </BrowserRouter>
