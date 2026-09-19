@@ -230,9 +230,8 @@ export default function Home() {
               ? "Talabalar uchun e'lonlarda bu shart qo'llanilmaydi"
               : undefined
           }
-          className={`${chipBase} ${
-            childrenChipDisabled ? chipDisabled : childrenAllowed ? chipActive : chipInactive
-          }`}
+          className={`${chipBase} ${childrenChipDisabled ? chipDisabled : childrenAllowed ? chipActive : chipInactive
+            }`}
         >
           Bolali oilalar mumkin
         </button>
@@ -250,7 +249,9 @@ export default function Home() {
 
         {!loading && !error && listings.length === 0 && (
           <p className="text-center text-muted">
-            Hech qanday e'lon topilmadi. Filterlarni o'zgartirib ko'ring.
+            {selectedRegion
+              ? "Hozircha bu shaharda e'lonlar yo'q"
+              : "Hech qanday e'lon topilmadi. Filterlarni o'zgartirib ko'ring."}
           </p>
         )}
 
