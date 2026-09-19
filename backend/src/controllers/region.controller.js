@@ -1,5 +1,5 @@
 import { REGIONS } from "../constants/regions.js";
 
-export function getRegions(req, res) {
+export function getAllRegions(req, res) {
   return res.json({ regions: REGIONS });
 }
