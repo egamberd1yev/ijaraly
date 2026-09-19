@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRegion } from "../context/RegionContext";
+import { Link } from "react-router-dom";
 
 export default function RegionSelector() {
   const { regions, selectedRegion, selectRegion } = useRegion();
@@ -57,10 +58,14 @@ export default function RegionSelector() {
               Viloyatni tanlang
             </div>
             {regions.map((region) => (
-              <button
+              <Link
                 key={region.id}
-                onClick={() => handleSelect(region.id)}
-                className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                to={`/regions/${region.id}`}
+                onClick={() => {
+                  selectRegion(region.id);
+                  setOpen(false);
+                }}
+                className={`block w-full text-left px-3 py-2 text-sm transition-colors ${
                   selectedRegion === region.id
                     ? "bg-gold-500/20 text-gold-400"
                     : "text-[#CFE3DD] hover:bg-white/5"
@@ -75,7 +80,7 @@ export default function RegionSelector() {
                   )}
                 </div>
                 <div className="text-[10px] text-muted/60 capitalize">{region.type}</div>
-              </button>
+              </Link>
             ))}
           </div>
         </>
