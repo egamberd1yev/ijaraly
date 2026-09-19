@@ -9,7 +9,7 @@ const PAGE_LIMIT = 12;
 
 export default function RegionListings() {
   const { regionId } = useParams();
-  const { regions, getRegionName } = useRegion();
+  const { regions, getRegionName, loading: regionsLoading } = useRegion();
 
   const regionName = regionId ? getRegionName(regionId) : null;
 
@@ -75,7 +75,7 @@ export default function RegionListings() {
   useEffect(() => {
     setLoading(true);
     setError("");
-    if (!regionId) {
+    if (!regionId || regionsLoading) {
       setLoading(false);
       return;
     }
@@ -164,6 +164,8 @@ export default function RegionListings() {
               Ushbu viloyatdagi e'lonlar
             </p>
           </>
+        ) : regionsLoading ? (
+          <p className="text-muted">Yuklanmoqda...</p>
         ) : (
           <p className="text-muted">Viloyat topilmadi</p>
         )}

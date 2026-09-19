@@ -18,8 +18,6 @@ export const REGIONS = [
   { id: "samarkand", name: "Samarqand viloyati", type: "viloyat" },
   { id: "navoiy", name: "Navoiy viloyati", type: "viloyat" },
   { id: "andijon", name: "Andijon viloyati", type: "viloyat" },
-
-  { id: "qirgiziston-sfm", name: "Fuqarolar Qirg'iziya (SFM)", type: "respublika" },
 ];
 
 export const Region = new EntitySchema({
