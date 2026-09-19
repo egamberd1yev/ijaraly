@@ -3,7 +3,6 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { AppDataSource } from "./config/data-source.js";
-import { Region } from "./entities/Region.js";
 import authRoutes from "./routes/auth.routes.js";
 import listingRoutes from "./routes/listing.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
@@ -38,6 +37,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api", contractRoutes);
 app.use("/api", userRoutes);
 app.use("/api", notificationRoutes);
+// Viloyatlar ro'yxati bazadan emas, constants/regions.js dan qaytariladi
 app.use("/api/regions", regionRoutes);
 
 app.get("/api/health", (_req, res) => {
@@ -45,18 +45,8 @@ app.get("/api/health", (_req, res) => {
 });
 
 AppDataSource.initialize()
-  .then(async () => {
+  .then(() => {
     console.log("✅ Ma'lumotlar bazasiga ulanish muvaffaqiyatli");
-
-    // Viloyatlar ro'yxatini seeding qilish (agar bo'sh bo'lsa)
-    const regionRepo = AppDataSource.getRepository(Region);
-    const existing = await regionRepo.count();
-    if (existing === 0) {
-      await regionRepo.save(REGIONS);
-      console.log(`✅ Viloyatlar ro'yxati seeding qilindi (${REGIONS.length} ta)`);
-    } else {
-      console.log(`ℹ Viloyatlar bazada mavjud (${existing} ta), seeding o'tkazilmadi`);
-    }
 
     startExpirationJob();
     app.listen(PORT, () => {
@@ -65,4 +55,6 @@ AppDataSource.initialize()
   })
   .catch((err) => {
     console.error("❌ Ma'lumotlar bazasiga ulanishda xatolik:", err);
+    // Railway deploy muvaffaqiyatsiz deb ko'rsatishi uchun jarayonni xato kodi bilan tugatamiz
+    process.exit(1);
   });
