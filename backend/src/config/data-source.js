@@ -7,7 +7,6 @@ import { Contract } from "../entities/Contract.js";
 import { Report } from "../entities/Report.js";
 import { Comment } from "../entities/Comment.js";
 import { Notification } from "../entities/Notification.js";
-import { Region } from "../entities/Region.js";
 
 dotenv.config();
 

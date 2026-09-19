@@ -12,7 +12,6 @@ import userRoutes from "./routes/user.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import regionRoutes from "./routes/region.routes.js";
 import { startExpirationJob } from "./jobs/expireListings.js";
-import { REGIONS } from "./entities/Region.js";
 
 dotenv.config();
 
