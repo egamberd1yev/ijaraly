@@ -1,5 +1,6 @@
 import Joi from "joi";
 import { RENOVATION_TYPES, SUITABLE_FOR_OPTIONS, STUDENT_GENDER_OPTIONS } from "../entities/Listing.js";
+import { REGION_VALUES } from "../constants/regions.js";
 
 // ---- Auth ----
 
@@ -58,10 +59,15 @@ export const updateProfileSchema = Joi.object({
 
 export const createListingSchema = Joi.object({
   images: Joi.array().items(Joi.string()).default([]),
-  regionId: Joi.string().required().messages({
-    "any.required": "Viloyatni tanlingiz shart",
-    "string.empty": "Viloyatni tanlang",
-  }),
+  // Viloyat majburiy va faqat REGIONS ro'yxatidagi qiymatlardan biri bo'lishi kerak
+  regionId: Joi.string()
+    .valid(...REGION_VALUES)
+    .required()
+    .messages({
+      "any.required": "Viloyatni tanlash shart",
+      "string.empty": "Viloyatni tanlang",
+      "any.only": "Noto'g'ri viloyat tanlandi",
+    }),
   address: Joi.string().min(3).max(255).required().messages({
     "string.empty": "Manzil kiritilishi shart",
     "string.min": "Manzil juda qisqa",
@@ -150,7 +156,10 @@ export const createListingSchema = Joi.object({
 
 export const updateListingSchema = Joi.object({
   images: Joi.array().items(Joi.string()),
-  regionId: Joi.string().allow(null, ""),
+  // Tahrirda yuborilsa, u ham ro'yxatdagi qiymat bo'lishi kerak (bo'sh satr bazaga yozilmasin)
+  regionId: Joi.string()
+    .valid(...REGION_VALUES)
+    .messages({ "any.only": "Noto'g'ri viloyat tanlandi" }),
   address: Joi.string().min(3).max(255),
   renovationType: Joi.string().valid(...RENOVATION_TYPES),
   hasGas: Joi.boolean(),
@@ -175,7 +184,11 @@ export const updateListingSchema = Joi.object({
 });
 
 export const listingQuerySchema = Joi.object({
-  regionId: Joi.string().allow(null, ""),
+  // Bo'sh satr ("Barcha viloyatlar") — filtr yo'q degani, shuning uchun .empty("")
+  regionId: Joi.string()
+    .valid(...REGION_VALUES)
+    .empty("")
+    .messages({ "any.only": "Noto'g'ri viloyat tanlandi" }),
   address: Joi.string().allow(""),
   renovationType: Joi.string().valid(...RENOVATION_TYPES),
   hasGas: Joi.string().valid("true", "false"),

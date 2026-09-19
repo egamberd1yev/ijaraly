@@ -237,11 +237,10 @@ export default function NewListing() {
             {["oddiy", "yevro"].map((type) => (
               <label
                 key={type}
-                className={`flex-1 cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm capitalize ${
-                  form.renovationType === type
+                className={`flex-1 cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm capitalize ${form.renovationType === type
                     ? "border-ink-700 bg-ink-700 text-paper-100"
                     : "border-line bg-white text-ink"
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -267,11 +266,10 @@ export default function NewListing() {
             ].map((opt) => (
               <label
                 key={opt.value}
-                className={`flex-1 cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm ${
-                  form.listedBy === opt.value
+                className={`flex-1 cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm ${form.listedBy === opt.value
                     ? "border-ink-700 bg-ink-700 text-paper-100"
                     : "border-line bg-white text-ink"
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -315,6 +313,10 @@ export default function NewListing() {
           </label>
           {regionsLoading ? (
             <p className="mt-1 text-sm text-muted">Yuklanmoqda...</p>
+          ) : regions.length === 0 ? (
+            <p className="mt-1 text-sm text-red-700">
+              Viloyatlar ro'yxatini yuklab bo'lmadi. Sahifani yangilab ko'ring.
+            </p>
           ) : (
             <select
               name="regionId"
@@ -349,11 +351,10 @@ export default function NewListing() {
             ].map((opt) => (
               <label
                 key={opt.value}
-                className={`cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm ${
-                  form.suitableFor === opt.value
+                className={`cursor-pointer rounded-lg border px-3 py-2.5 text-center text-sm ${form.suitableFor === opt.value
                     ? "border-ink-700 bg-ink-700 text-paper-100"
                     : "border-line bg-white text-ink"
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -380,11 +381,10 @@ export default function NewListing() {
                 ].map((opt) => (
                   <label
                     key={String(opt.value)}
-                    className={`flex-1 cursor-pointer rounded-lg border px-3 py-2 text-center text-sm ${
-                      form.childrenAllowed === opt.value
+                    className={`flex-1 cursor-pointer rounded-lg border px-3 py-2 text-center text-sm ${form.childrenAllowed === opt.value
                         ? "border-ink-700 bg-ink-700 text-paper-100"
                         : "border-line bg-white text-ink"
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -412,11 +412,10 @@ export default function NewListing() {
                   ].map((opt) => (
                     <label
                       key={opt.value}
-                      className={`flex-1 cursor-pointer rounded-lg border px-2 py-2 text-center text-xs ${
-                        form.studentGender === opt.value
+                      className={`flex-1 cursor-pointer rounded-lg border px-2 py-2 text-center text-xs ${form.studentGender === opt.value
                           ? "border-ink-700 bg-ink-700 text-paper-100"
                           : "border-line bg-white text-ink"
-                      }`}
+                        }`}
                     >
                       <input
                         type="radio"
@@ -461,11 +460,10 @@ export default function NewListing() {
               ].map((opt) => (
                 <label
                   key={String(opt.value)}
-                  className={`flex-1 cursor-pointer rounded-lg border px-2 py-2 text-center text-xs ${
-                    form.petsAllowed === opt.value
+                  className={`flex-1 cursor-pointer rounded-lg border px-2 py-2 text-center text-xs ${form.petsAllowed === opt.value
                       ? "border-ink-700 bg-ink-700 text-paper-100"
                       : "border-line bg-white text-ink"
-                  }`}
+                    }`}
                 >
                   <input
                     type="radio"
@@ -545,11 +543,10 @@ export default function NewListing() {
                     key={opt.value}
                     type="button"
                     onClick={() => setForm({ ...form, currency: opt.value })}
-                    className={`px-3 text-sm ${
-                      form.currency === opt.value
+                    className={`px-3 text-sm ${form.currency === opt.value
                         ? "bg-ink-700 text-paper-100"
                         : "bg-white text-muted"
-                    }`}
+                      }`}
                   >
                     {opt.label}
                   </button>

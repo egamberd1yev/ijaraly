@@ -12,7 +12,6 @@ import Profile from "./pages/Profile";
 import UserSearch from "./pages/UserSearch";
 import PublicProfile from "./pages/PublicProfile";
 import Notifications from "./pages/Notifications";
-import RegionListings from "./pages/RegionListings";
 
 export default function App() {
   return (
@@ -25,7 +24,6 @@ export default function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/listings/new" element={<NewListing />} />
             <Route path="/listings/:id" element={<ListingDetail />} />
-            <Route path="/regions/:regionId" element={<RegionListings />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/contracts" element={<Contracts />} />
             <Route path="/profile" element={<Profile />} />
